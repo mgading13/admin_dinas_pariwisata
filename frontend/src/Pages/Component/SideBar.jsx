@@ -1,10 +1,6 @@
 import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
-import {
-  Sheet,
-  SheetContent,
-  SheetTrigger,
-} from "@/components/ui/sheet";
+import { Link, useNavigate, useLocation } from "react-router-dom";
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -16,18 +12,12 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import {
-  LogOut,
-  Menu,
-  MapPin,
-  Package,
-  User,
-} from "lucide-react";
-import Dashboard from "../Dashboard" ;
+import { LogOut, Menu, MapPin, Package, User } from "lucide-react";
 
-export default function SidebarAdmin() {
+export default function Sidebar({ children }) {
   const [open, setOpen] = useState(false);
   const navigate = useNavigate();
+  const location = useLocation();
 
   // Contoh data pengguna login
   const user = {
@@ -39,8 +29,10 @@ export default function SidebarAdmin() {
   const handleLogout = () => {
     // Tambahkan logika logout sesuai kebutuhanmu
     alert("Logout berhasil!");
-    navigate("/login");
+    navigate("/");
   };
+
+  const isActive = (path) => location.pathname === path;
 
   return (
     <div className="flex min-h-screen bg-gray-100">
@@ -48,9 +40,7 @@ export default function SidebarAdmin() {
       <aside className="hidden md:flex flex-col w-64 bg-white border-r shadow-sm">
         {/* Header */}
         <div className="h-16 flex items-center justify-center border-b">
-          <h1 className="text-xl font-bold text-gray-800">
-            Admin Dashboard
-          </h1>
+          <h1 className="text-xl font-bold text-gray-800">Admin Dashboard</h1>
         </div>
 
         {/* Scrollable Menu */}
@@ -58,16 +48,36 @@ export default function SidebarAdmin() {
           <nav className="space-y-2">
             <Link
               to="/admin/atraksi"
-              className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-gray-100 text-gray-700 font-medium"
+              className={`flex items-center gap-3 px-3 py-2 rounded-lg font-medium transition
+                ${
+                  isActive("/admin/atraksi")
+                    ? "bg-blue-50 text-blue-600 font-semibold"
+                    : "text-gray-700 hover:bg-gray-100"
+                }`}
             >
-              <MapPin className="h-5 w-5 text-blue-500" />
+              <MapPin
+                className={`h-5 w-5 ${
+                  isActive("/admin/atraksi") ? "text-blue-600" : "text-blue-500"
+                }`}
+              />
               Atraksi
             </Link>
             <Link
               to="/admin/paket-wisata"
-              className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-gray-100 text-gray-700 font-medium"
+              className={`flex items-center gap-3 px-3 py-2 rounded-lg font-medium transition
+                ${
+                  isActive("/admin/paket-wisata")
+                    ? "bg-green-50 text-green-600 font-semibold"
+                    : "text-gray-700 hover:bg-gray-100"
+                }`}
             >
-              <Package className="h-5 w-5 text-green-500" />
+              <Package
+                className={`h-5 w-5 ${
+                  isActive("/admin/paket-wisata")
+                    ? "text-green-600"
+                    : "text-green-500"
+                }`}
+              />
               Paket Wisata
             </Link>
           </nav>
@@ -118,9 +128,7 @@ export default function SidebarAdmin() {
           <SheetContent side="left" className="p-0">
             <div className="flex flex-col h-full">
               <div className="h-16 flex items-center justify-center border-b">
-                <h2 className="text-xl font-bold text-gray-800">
-                  Admin Menu
-                </h2>
+                <h2 className="text-xl font-bold text-gray-800">Admin Menu</h2>
               </div>
 
               <ScrollArea className="flex-1 px-4 py-6">
@@ -128,17 +136,40 @@ export default function SidebarAdmin() {
                   <Link
                     to="/admin/atraksi"
                     onClick={() => setOpen(false)}
-                    className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-gray-100 text-gray-700 font-medium"
+                    className={`flex items-center gap-3 px-3 py-2 rounded-lg font-medium transition
+                      ${
+                        isActive("/admin/atraksi")
+                          ? "bg-blue-50 text-blue-600 font-semibold"
+                          : "text-gray-700 hover:bg-gray-100"
+                      }`}
                   >
-                    <MapPin className="h-5 w-5 text-blue-500" />
+                    <MapPin
+                      className={`h-5 w-5 ${
+                        isActive("/admin/atraksi")
+                          ? "text-blue-600"
+                          : "text-blue-500"
+                      }`}
+                    />
                     Atraksi
                   </Link>
+
                   <Link
                     to="/admin/paket-wisata"
                     onClick={() => setOpen(false)}
-                    className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-gray-100 text-gray-700 font-medium"
+                    className={`flex items-center gap-3 px-3 py-2 rounded-lg font-medium transition
+                      ${
+                        isActive("/admin/paket-wisata")
+                          ? "bg-green-50 text-green-600 font-semibold"
+                          : "text-gray-700 hover:bg-gray-100"
+                      }`}
                   >
-                    <Package className="h-5 w-5 text-green-500" />
+                    <Package
+                      className={`h-5 w-5 ${
+                        isActive("/admin/paket-wisata")
+                          ? "text-green-600"
+                          : "text-green-500"
+                      }`}
+                    />
                     Paket Wisata
                   </Link>
                 </nav>
@@ -171,14 +202,7 @@ export default function SidebarAdmin() {
       </header>
 
       {/* KONTEN UTAMA */}
-      <main className="flex-1 p-6 md:ml-64 mt-14 md:mt-0">
-        <h2 className="text-2xl font-bold text-gray-800 mb-4">
-          Selamat datang, {user.name.split(" ")[0]} 👋
-        </h2>
-        <p className="text-gray-600">
-          Ini adalah halaman dashboard admin Anda.
-        </p>
-      </main>
+      <main className="flex-1 overflow-y-auto">{children}</main>
     </div>
   );
 }
