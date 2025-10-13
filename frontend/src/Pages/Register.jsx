@@ -91,12 +91,8 @@ const Register = () => {
             Sudah punya akun?{' '}
             <a href='/' className='text-blue-600 hover:underline'>
               Login
-            </a>{' '}
-            |{' '}
-            <a
-              href='/admin/dashboard'
-              className='text-blue-600 hover:underline'
-            >
+            </a>
+            <a href='/admin/atraksi' className='text-blue-600 hover:underline'>
               Lihat Tabel
             </a>
           </p>
