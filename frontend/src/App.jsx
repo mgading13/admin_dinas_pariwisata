@@ -10,7 +10,7 @@ function App() {
       <Routes>
         <Route path="/" element={<Login />} />
         <Route path="/admin/register" element={<Register />} />
-        <Route path="/admin/dashboard" element={<Dashboard />} />
+        <Route path="/admin/atraksi" element={<Dashboard />} />
       </Routes>
     </BrowserRouter>
   );

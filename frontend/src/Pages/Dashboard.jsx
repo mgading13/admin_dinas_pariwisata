@@ -1,6 +1,7 @@
 import { useState, useMemo } from "react";
 import AddDataModal from "./Component/AddDataModal";
 import EditDataModal from "./Component/EditDataModal";
+import SideBar from "./Component/SideBar";
 import {
   Table,
   TableBody,
@@ -109,6 +110,8 @@ function Dashboard() {
   };
 
   return (
+    <>
+      <SideBar />
     <div className="p-8 bg-gray-50 min-h-screen">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold">Daftar Atraksi</h1>
@@ -328,6 +331,7 @@ function Dashboard() {
         </DialogContent>
       </Dialog>
     </div>
+    </>
   );
 }
 
