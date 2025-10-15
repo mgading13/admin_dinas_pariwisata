@@ -13,6 +13,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { LogOut, Menu, MapPin, Package, User } from "lucide-react";
+import { toast } from "sonner"
 
 export default function Sidebar({ children }) {
   const [open, setOpen] = useState(false);
@@ -28,7 +29,10 @@ export default function Sidebar({ children }) {
 
   const handleLogout = () => {
     // Tambahkan logika logout sesuai kebutuhanmu
-    alert("Logout berhasil!");
+    localStorage.removeItem("token");
+    toast.success("Logout Berhasil", {
+      className: "bg-emerald-500 text-white font-medium",
+    });
     navigate("/");
   };
 
@@ -117,7 +121,7 @@ export default function Sidebar({ children }) {
       </aside>
 
       {/* MOBILE NAVBAR */}
-      <header className="md:hidden fixed top-0 left-0 right-0 z-50 bg-white border-b flex items-center justify-between px-4 h-14 shadow-sm">
+      <header className="md:hidden fixed top-0 left-0 right-0 z-50 bg-white border-b flex items-center justify-between px-4 h-14 shadow-sm ">
         <h1 className="text-lg font-semibold text-gray-800">Admin Panel</h1>
         <Sheet open={open} onOpenChange={setOpen}>
           <SheetTrigger asChild>

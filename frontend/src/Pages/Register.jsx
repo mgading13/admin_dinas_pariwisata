@@ -30,7 +30,7 @@ const Register = () => {
       )
       setMessage('✅ Registrasi berhasil!')
       console.log('Response:', res.data)
-      setFormData({ nama: '', username: '', password: '' })
+      setFormData({ nama: '', username: '',jenis_kelamin: '', password: '' })
     } catch (err) {
       console.error('❌ Error register:', err)
       setMessage(err.response?.data?.message || 'Terjadi kesalahan server')
@@ -91,11 +91,7 @@ const Register = () => {
             Sudah punya akun?{' '}
             <a href='/' className='text-blue-600 hover:underline'>
               Login
-            </a>
-            <a href='/admin/atraksi' className='text-blue-600 hover:underline'>
-              Lihat Tabel
-            </a>
-          </p>
+            </a>          </p>
         </CardContent>
       </Card>
     </div>
