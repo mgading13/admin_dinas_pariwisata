@@ -2,143 +2,176 @@ import {
   Dialog,
   DialogContent,
   DialogHeader,
-  DialogTitle
-} from '@/components/ui/dialog'
-import { Input } from '@/components/ui/input'
-import { Button } from '@/components/ui/button'
-import { Label } from '@/components/ui/label'
-import { Textarea } from '@/components/ui/textarea'
-import { useState, useEffect } from 'react'
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { useState, useEffect } from "react";
+import axios from "axios";
+import { toast } from "sonner";
 
-const EditDataModal = ({ open, onClose, onSubmit, initialData }) => {
+const EditDataModal = ({ open, onClose, initialData, refreshData }) => {
   const [form, setForm] = useState({
-    namaAtraksi: '',
-    deskripsi: '',
-    foto: '',
-    tanggalMulai: '',
-    tanggalBerakhir: '',
-    lokasi: ''
-  })
+    nameEvent: "",
+    description: "",
+    foto: "",
+    startdate: "",
+    enddate: "",
+    location: "",
+  });
 
-  // isi otomatis form jika sedang edit
+  // 🟢 Saat modal dibuka, isi otomatis form dengan data lama
   useEffect(() => {
     if (initialData) {
       setForm({
-        namaAtraksi: initialData.namaAtraksi || '',
-        deskripsi: initialData.deskripsi || '',
-        foto: initialData.foto || '',
-        tanggalMulai: initialData.tanggalMulai || '',
-        tanggalBerakhir: initialData.tanggalBerakhir || '',
-        lokasi: initialData.lokasi || ''
-      })
+        nameEvent: initialData.nameEvent || "",
+        description: initialData.description || "",
+        foto: initialData.foto || "",
+        startdate: initialData.startdate?.split("T")[0] || "",
+        enddate: initialData.enddate?.split("T")[0] || "",
+        location: initialData.location || "",
+      });
     } else {
       setForm({
-        namaAtraksi: '',
-        deskripsi: '',
-        foto: null,
-        tanggalMulai: '',
-        tanggalBerakhir: '',
-        lokasi: ''
-      })
+        nameEvent: "",
+        description: "",
+        foto: "",
+        startdate: "",
+        enddate: "",
+        location: "",
+      });
     }
-  }, [initialData, open])
+  }, [initialData, open]);
 
-  const handleChange = e => {
-    const { name, value, files } = e.target
-    if (name === 'foto') setForm({ ...form, foto: files[0] })
-    else setForm({ ...form, [name]: value })
-  }
+  // 🟡 Update state saat input berubah
+  const handleChange = (e) => {
+    const { name, value, files } = e.target;
+    if (name === "foto") setForm({ ...form, foto: files[0] });
+    else setForm({ ...form, [name]: value });
+  };
 
-  const handleSubmit = () => {
-    onSubmit(form)
-    onClose()
-  }
+  // 🟢 Submit perubahan ke backend
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    try {
+      const formData = new FormData();
+      formData.append("nameEvent", form.nameEvent);
+      formData.append("description", form.description);
+      formData.append("foto", form.foto);
+      formData.append("startdate", form.startdate);
+      formData.append("enddate", form.enddate);
+      formData.append("location", form.location);
+
+      console.log("🟡 Mengirim data edit ke backend:", form);
+
+      const res = await axios.put(
+        `http://localhost:3000/api/atraksi/${initialData.id}`,
+        formData,
+        {
+          headers: { "Content-Type": "multipart/form-data" },
+        }
+      );
+
+      console.log("🟢 Respons backend:", res.data);
+      toast.success("Data atraksi berhasil diperbarui!");
+      await refreshData?.();
+      onClose();
+    } catch (error) {
+      console.error("❌ Gagal memperbarui data:", error);
+      toast.error("Gagal memperbarui data!");
+    }
+  };
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className='max-w-md'>
+      <DialogContent className="max-w-md">
         <DialogHeader>
           <DialogTitle>Edit Data Atraksi</DialogTitle>
         </DialogHeader>
 
-        <div className='space-y-4 mt-4'>
-          <div>
-            <Label>Nama Atraksi</Label>
-            <Input
-              name='namaAtraksi'
-              value={form.namaAtraksi}
-              onChange={handleChange}
-              placeholder='Masukkan nama atraksi'
-            />
-          </div>
-
-          <div>
-            <Label>Deskripsi</Label>
-            <Textarea
-              name='deskripsi'
-              value={form.deskripsi}
-              onChange={handleChange}
-              placeholder='Tulis deskripsi atraksi...'
-            />
-          </div>
-
-          <div>
-            <Label>Foto</Label>
-            <Input
-              name='foto'
-              type='file'
-              accept='image/*'
-              onChange={handleChange}
-            />
-            {form.foto && typeof form.foto === 'string' && (
-              <img
-                src={form.foto}
-                alt='Preview'
-                className='mt-2 w-24 h-24 object-cover rounded-md border'
+        <form onSubmit={handleSubmit}>
+          <div className="space-y-4 mt-4">
+            <div>
+              <Label>Nama Atraksi</Label>
+              <Input
+                name="nameEvent"
+                value={form.nameEvent}
+                onChange={handleChange}
+                placeholder="Masukkan nama atraksi"
               />
-            )}
-          </div>
+            </div>
 
-          <div>
-            <Label>Tanggal Mulai</Label>
-            <Input
-              name='tanggalMulai'
-              type='date'
-              value={form.tanggalMulai}
-              onChange={handleChange}
-            />
-          </div>
+            <div>
+              <Label>Deskripsi</Label>
+              <Textarea
+                name="description"
+                value={form.description}
+                onChange={handleChange}
+                placeholder="Tulis deskripsi atraksi..."
+              />
+            </div>
 
-          <div>
-            <Label>Tanggal Berakhir</Label>
-            <Input
-              name='tanggalBerakhir'
-              type='date'
-              value={form.tanggalBerakhir}
-              onChange={handleChange}
-            />
-          </div>
+            <div>
+              <Label>Foto</Label>
+              <Input
+                name="foto"
+                type="file"
+                accept="image/*"
+                onChange={handleChange}
+              />
+              {form.foto && typeof form.foto === "string" && (
+                <img
+                  src={form.foto}
+                  alt="Preview"
+                  className="mt-2 w-24 h-24 object-cover rounded-md border"
+                />
+              )}
+            </div>
 
-          <div>
-            <Label>Lokasi</Label>
-            <Input
-              name='lokasi'
-              value={form.lokasi}
-              onChange={handleChange}
-              placeholder='Masukkan lokasi atraksi'
-            />
-          </div>
+            <div>
+              <Label>Tanggal Mulai</Label>
+              <Input
+                name="startdate"
+                type="date"
+                value={form.startdate}
+                onChange={handleChange}
+              />
+            </div>
 
-          <div className='flex justify-end gap-2 mt-4'>
-            <Button variant='outline' onClick={onClose}>
-              Batal
-            </Button>
-            <Button onClick={handleSubmit}>Simpan Perubahan</Button>
+            <div>
+              <Label>Tanggal Berakhir</Label>
+              <Input
+                name="enddate"
+                type="date"
+                value={form.enddate}
+                onChange={handleChange}
+              />
+            </div>
+
+            <div>
+              <Label>Lokasi</Label>
+              <Input
+                name="location"
+                value={form.location}
+                onChange={handleChange}
+                placeholder="Masukkan lokasi atraksi"
+              />
+            </div>
+
+            <div className="flex justify-end gap-2 mt-4">
+              <Button type="button" variant="outline" onClick={onClose}>
+                Batal
+              </Button>
+              <Button type="submit">Simpan Perubahan</Button>
+            </div>
           </div>
-        </div>
+        </form>
       </DialogContent>
     </Dialog>
-  )
-}
+  );
+};
 
-export default EditDataModal
+export default EditDataModal;

@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import AddDataModal from "./AddDataModal";
 import EditDataModal from "./EditDataModal";
 import SideBar from "../SideBar";
@@ -29,43 +29,66 @@ import {
   AlertDialogCancel,
   AlertDialogAction,
 } from "@/components/ui/alert-dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { toast } from "sonner";
+import axios from "axios";
 
 function Dashboard() {
   const [openAddModal, setOpenAddModal] = useState(false);
   const [openEditModal, setOpenEditModal] = useState(false);
   const [openDetailModal, setOpenDetailModal] = useState(false);
   const [selectedData, setSelectedData] = useState(null);
-
-  const [data, setData] = useState([
-    {
-      id: 1,
-      jenisWisata: "Wisata Alam - Danau Poso",
-      lokasi: "Kabupaten Poso",
-      deskripsi: "Menikmati pemandangan indah danau dan pegunungan di sekitar Poso.",
-      harga: 250000,
-      foto: "https://example.com/danauposo.jpg",
-    },
-    {
-      id: 2,
-      jenisWisata: "Wisata Budaya - Palu Nomoni",
-      lokasi: "Kota Palu",
-      deskripsi: "Festival budaya khas masyarakat Palu dengan pertunjukan musik tradisional.",
-      harga: 150000,
-      foto: "https://example.com/palu.jpg",
-    },
-  ]);
-
   const [search, setSearch] = useState("");
+  const [filterLokasi, setFilterLokasi] = useState("all");
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 5;
 
-  // 🔍 Filter & Pencarian
+  const [data, setData] = useState([]);
+  const [loading, setLoading] = useState(false);
+
+  const fetchData = async () => {
+    try {
+      const res = await axios.get("http://localhost:3000/api/tourPackage");
+      console.log("📦 Data dari backend:", res.data);
+      setData(res.data.data || res.data);
+    } catch (err) {
+      console.error("Gagal fetch data paket wisata:", err);
+    }
+  };
+  useEffect(() => {
+    fetchData();
+  }, []);
+
+  const handleOpenDetail = async (id) => {
+    try {
+      const res = await axios.get(
+        `http://localhost:3000/api/tourPackage/${id}`
+      );
+      console.log("Detail paket wisata:", res.data);
+      setSelectedData(res.data);
+      setOpenDetailModal(true);
+    } catch (error) {
+      console.error("Gagal ambil detail wisata:", error);
+    }
+  };
+
+  // 🧮 Filter dan pencarian
   const filteredData = useMemo(() => {
-    return data.filter((item) =>
-      item.jenisWisata.toLowerCase().includes(search.toLowerCase())
-    );
-  }, [data, search]);
+    return data.filter((item) => {
+      const matchSearch =
+        item.nama_wisata?.toLowerCase().includes(search.toLowerCase()) ||
+        item.lokasi?.toLowerCase().includes(search.toLowerCase());
+      const matchFilter =
+        filterLokasi === "all" || item.lokasi === filterLokasi;
+      return matchSearch && matchFilter;
+    });
+  }, [data, search, filterLokasi]);
 
   // 📄 Pagination
   const totalPages = Math.ceil(filteredData.length / itemsPerPage);
@@ -74,31 +97,29 @@ function Dashboard() {
     currentPage * itemsPerPage
   );
 
-  // ➕ Tambah Data
-  const handleAddData = (newData) => {
-    setData([...data, { id: Date.now(), ...newData }]);
-    toast.success("Paket wisata berhasil ditambahkan!");
-  };
-
-  // ✏️ Edit Data
   const handleEditData = (updatedData) => {
     setData((prev) =>
       prev.map((d) => (d.id === updatedData.id ? updatedData : d))
     );
-    toast.success("Data berhasil diperbarui!");
+    toast.success("Data berhasil diperbarui.");
   };
 
-  // ❌ Hapus Data
-  const handleDelete = (id) => {
-    setData((prev) => prev.filter((d) => d.id !== id));
-    toast.error("Data berhasil dihapus!");
+  const handleDelete = async (id) => {
+    try {
+      await axios.delete(`http://localhost:3000/api/tourPackage/${id}`);
+      toast.success("Data berhasil dihapus.");
+      setData((prev) => prev.filter((d) => d.id !== id));
+    } catch (err) {
+      toast.error("Gagal menghapus data.");
+      console.error(err);
+    }
   };
 
   return (
     <SideBar>
       <div className="p-8 bg-gray-50 min-h-screen">
         {/* Header */}
-        <div className="flex justify-between items-center mb-6">
+        <div className="flex justify-between items-center pt-10 mb-6">
           <h1 className="text-2xl font-bold">Daftar Paket Wisata</h1>
           <Button onClick={() => setOpenAddModal(true)}>Tambah Data</Button>
         </div>
@@ -106,7 +127,7 @@ function Dashboard() {
         {/* Search */}
         <div className="mb-5 flex justify-between items-center">
           <Input
-            placeholder="Cari berdasarkan jenis wisata..."
+            placeholder="Cari berdasarkan nama wisata dan lokasi"
             value={search}
             onChange={(e) => {
               setSearch(e.target.value);
@@ -114,55 +135,93 @@ function Dashboard() {
             }}
             className="w-full md:w-1/3"
           />
+
+          <Select
+              value={filterLokasi}
+              onValueChange={(val) => {
+                setFilterLokasi(val);
+                setCurrentPage(1);
+              }}
+            >
+              <SelectTrigger className="w-full md:w-1/4">
+                <SelectValue placeholder="Filter Lokasi" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Semua Lokasi</SelectItem>
+                {[...new Set(data.map((d) => d.lokasi))].map(
+                  (lokasi, index) => (
+                    <SelectItem
+                      key={lokasi || index}
+                      value={lokasi || "unknown"}
+                    >
+                      {lokasi || "Tidak diketahui"}
+                    </SelectItem>
+                  )
+                )}
+              </SelectContent>
+            </Select>
         </div>
 
-        {/* Tabel Data */}
+        {/* 📊 Tabel Data */}
         <div className="bg-white rounded-xl shadow-md overflow-hidden">
           <Table>
             <TableHeader>
               <TableRow>
                 <TableHead>No</TableHead>
-                <TableHead>Jenis Wisata</TableHead>
+                <TableHead>Nama Wisata</TableHead>
                 <TableHead>Lokasi</TableHead>
                 <TableHead>Deskripsi</TableHead>
                 <TableHead>Harga</TableHead>
+                <TableHead>Kontak</TableHead>
                 <TableHead>Foto</TableHead>
                 <TableHead className="text-center">Aksi</TableHead>
               </TableRow>
             </TableHeader>
+
             <TableBody>
-              {paginatedData.length > 0 ? (
+              {loading ? (
+                <TableRow>
+                  <TableCell
+                    colSpan="7"
+                    className="text-center py-6 text-gray-500"
+                  >
+                    Memuat data...
+                  </TableCell>
+                </TableRow>
+              ) : paginatedData.length > 0 ? (
                 paginatedData.map((item, index) => (
                   <TableRow key={item.id}>
                     <TableCell>
                       {(currentPage - 1) * itemsPerPage + index + 1}
                     </TableCell>
-                    <TableCell>{item.jenisWisata}</TableCell>
+                    <TableCell>{item.nama_wisata}</TableCell>
                     <TableCell>{item.lokasi}</TableCell>
                     <TableCell className="max-w-xs truncate">
                       {item.deskripsi}
                     </TableCell>
-                    <TableCell>
-                      Rp {item.harga.toLocaleString("id-ID")}
-                    </TableCell>
+                    <TableCell>Rp. {Number(item.harga).toLocaleString("id-ID")}</TableCell>
+                    <TableCell>{item.kontak}</TableCell>
+
                     <TableCell>
                       <img
-                        src={item.foto}
-                        alt={item.jenisWisata}
+                        src={`http://localhost:3000${item.media}`}
+                        alt={item.nama_wisata}
                         className="w-16 h-16 object-cover rounded-lg border"
                       />
                     </TableCell>
+
                     <TableCell className="flex justify-center gap-2">
                       <Button
                         variant="outline"
                         size="sm"
                         onClick={() => {
-                          setSelectedData(item);
+                          handleOpenDetail(item.id);
                           setOpenDetailModal(true);
                         }}
                       >
                         Detail
                       </Button>
+
                       <Button
                         variant="secondary"
                         size="sm"
@@ -174,7 +233,7 @@ function Dashboard() {
                         Edit
                       </Button>
 
-                      {/* Konfirmasi Hapus */}
+                      {/* Hapus */}
                       <AlertDialog>
                         <AlertDialogTrigger asChild>
                           <Button variant="destructive" size="sm">
@@ -183,11 +242,12 @@ function Dashboard() {
                         </AlertDialogTrigger>
                         <AlertDialogContent>
                           <AlertDialogHeader>
-                            <AlertDialogTitle>Konfirmasi Hapus</AlertDialogTitle>
+                            <AlertDialogTitle>
+                              Konfirmasi Hapus
+                            </AlertDialogTitle>
                             <AlertDialogDescription>
                               Yakin ingin menghapus{" "}
-                              <strong>{item.jenisWisata}</strong>? Data ini akan
-                              hilang secara permanen.
+                              <strong>{item.nama_wisata}</strong>?
                             </AlertDialogDescription>
                           </AlertDialogHeader>
                           <AlertDialogFooter>
@@ -206,7 +266,7 @@ function Dashboard() {
               ) : (
                 <TableRow>
                   <TableCell
-                    colSpan="6"
+                    colSpan="7"
                     className="text-center py-6 text-gray-500"
                   >
                     Tidak ada data ditemukan.
@@ -217,7 +277,7 @@ function Dashboard() {
           </Table>
         </div>
 
-        {/* Pagination */}
+        {/* 📄 Pagination */}
         <div className="flex justify-end items-center gap-2 mt-4">
           <Button
             variant="outline"
@@ -240,34 +300,33 @@ function Dashboard() {
           </Button>
         </div>
 
-        {/* Modal Tambah */}
+        {/* 🪄 Modal Tambah */}
         <AddDataModal
           open={openAddModal}
           onClose={() => setOpenAddModal(false)}
-          onSubmit={handleAddData}
+          refreshData={fetchData}
         />
 
-        {/* Modal Edit */}
+        {/* ✏️ Modal Edit */}
         <EditDataModal
           open={openEditModal}
           onClose={() => setOpenEditModal(false)}
           onSubmit={handleEditData}
           initialData={selectedData}
+          refreshData={fetchData}
         />
 
-        {/* Modal Detail */}
+        {/* 👁️ Modal Detail */}
         <Dialog open={openDetailModal} onOpenChange={setOpenDetailModal}>
           <DialogContent>
             <DialogHeader>
               <DialogTitle>Detail Paket Wisata</DialogTitle>
             </DialogHeader>
+
             {selectedData && (
               <div className="space-y-2 text-sm mt-3">
                 <p>
-                  <strong>Jenis Wisata:</strong> {selectedData.jenisWisata}
-                </p>
-                <p>
-                  <strong>Lokasi:</strong> {selectedData.lokasi}
+                  <strong>Nama Wisata:</strong> {selectedData.nama_wisata}
                 </p>
                 <p>
                   <strong>Deskripsi:</strong> {selectedData.deskripsi}
@@ -276,9 +335,13 @@ function Dashboard() {
                   <strong>Harga:</strong> Rp{" "}
                   {selectedData.harga.toLocaleString("id-ID")}
                 </p>
+                <p>
+                  <strong>Kontak:</strong> {selectedData.kontak}
+                </p>
+
                 <img
-                  src={selectedData.foto}
-                  alt={selectedData.jenisWisata}
+                  src={`http://localhost:3000${selectedData.media}`}
+                  alt={selectedData.nama_wisata}
                   className="w-full h-48 object-cover rounded-lg mt-2"
                 />
               </div>

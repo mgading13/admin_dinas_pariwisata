@@ -1,9 +1,9 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -13,23 +13,65 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { LogOut, Menu, MapPin, Package, User } from "lucide-react";
-import { toast } from "sonner"
+import { toast } from "sonner";
+import ProfilModal from "./ProfilModal";
+import axios from "axios";
 
 export default function Sidebar({ children }) {
   const [open, setOpen] = useState(false);
+  const [openProfil, setOpenProfil] = useState(false);
+  const localUser = JSON.parse(localStorage.getItem("admin"));
+  const userId = localUser?.id;
   const navigate = useNavigate();
   const location = useLocation();
+  const [adminData, setAdminData] = useState({
+    nama_Lengkap: "",
+    jenis_kelamin: "",
+    username: "",
+  });
 
-  // Contoh data pengguna login
-  const user = {
-    name: "Admin Sulteng",
-    email: "admin@banksulteng.com",
-    avatarUrl: "https://api.dicebear.com/9.x/avataaars/svg?seed=Admin",
+  // Ambil inisial nama
+  const getInitials = (name) => {
+    if (!name) return "A";
+    return name
+      .split(" ")
+      .map((n) => n[0])
+      .join("")
+      .toUpperCase();
   };
 
+  // Tentukan warna avatar
+  const getAvatarColor = (gender) => {
+    switch (gender) {
+      case "laki-laki":
+        return "bg-blue-500 text-white";
+      case "perempuan":
+        return "bg-pink-500 text-white";
+      default:
+        return "bg-gray-400 text-white";
+    }
+  };
+
+  useEffect(() => {
+    if (!userId) return;
+
+    axios
+      .get(`http://localhost:3000/api/user/${userId}`)
+      .then((res) => {
+        const admin = res.data.data || res.data;
+
+        setAdminData({
+          nama_Lengkap: admin.nama_Lengkap,
+          jenis_kelamin: admin.jenis_kelamin,
+          username: admin.username,
+        });
+      })
+      .catch(() => toast.error("Gagal memuat data admin"));
+  }, [userId]);
+
   const handleLogout = () => {
-    // Tambahkan logika logout sesuai kebutuhanmu
     localStorage.removeItem("token");
+    localStorage.removeItem("admin");
     toast.success("Logout Berhasil", {
       className: "bg-emerald-500 text-white font-medium",
     });
@@ -77,9 +119,7 @@ export default function Sidebar({ children }) {
             >
               <Package
                 className={`h-5 w-5 ${
-                  isActive("/admin/paket-wisata")
-                    ? "text-green-600"
-                    : "text-green-500"
+                  isActive("/admin/paket-wisata") ? "text-green-600" : "text-green-500"
                 }`}
               />
               Paket Wisata
@@ -95,20 +135,21 @@ export default function Sidebar({ children }) {
                 variant="ghost"
                 className="w-full flex items-center justify-start gap-3"
               >
-                <Avatar>
-                  <AvatarImage src={user.avatarUrl} />
-                  <AvatarFallback>{user.name[0]}</AvatarFallback>
+                <Avatar className={getAvatarColor(adminData.jenis_kelamin)}>
+                  <AvatarFallback>{getInitials(adminData.nama_Lengkap)}</AvatarFallback>
                 </Avatar>
                 <div className="text-left">
-                  <p className="text-sm font-semibold">{user.name}</p>
-                  <p className="text-xs text-gray-500">{user.email}</p>
+                  <p className="text-sm font-semibold text-black">
+                    {adminData.nama_Lengkap}
+                  </p>
+                  <p className="text-xs text-gray-500">{adminData.username}</p>
                 </div>
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-56">
               <DropdownMenuLabel>Profil</DropdownMenuLabel>
               <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={() => navigate("/admin/profil")}>
+              <DropdownMenuItem onClick={() => setOpenProfil(true)}>
                 <User className="mr-2 h-4 w-4" /> Lihat Profil
               </DropdownMenuItem>
               <DropdownMenuSeparator />
@@ -121,7 +162,7 @@ export default function Sidebar({ children }) {
       </aside>
 
       {/* MOBILE NAVBAR */}
-      <header className="md:hidden fixed top-0 left-0 right-0 z-50 bg-white border-b flex items-center justify-between px-4 h-14 shadow-sm ">
+      <header className="md:hidden fixed top-0 left-0 right-0 z-50 bg-white border-b flex items-center justify-between px-4 h-14 shadow-sm">
         <h1 className="text-lg font-semibold text-gray-800">Admin Panel</h1>
         <Sheet open={open} onOpenChange={setOpen}>
           <SheetTrigger asChild>
@@ -149,9 +190,7 @@ export default function Sidebar({ children }) {
                   >
                     <MapPin
                       className={`h-5 w-5 ${
-                        isActive("/admin/atraksi")
-                          ? "text-blue-600"
-                          : "text-blue-500"
+                        isActive("/admin/atraksi") ? "text-blue-600" : "text-blue-500"
                       }`}
                     />
                     Atraksi
@@ -169,9 +208,7 @@ export default function Sidebar({ children }) {
                   >
                     <Package
                       className={`h-5 w-5 ${
-                        isActive("/admin/paket-wisata")
-                          ? "text-green-600"
-                          : "text-green-500"
+                        isActive("/admin/paket-wisata") ? "text-green-600" : "text-green-500"
                       }`}
                     />
                     Paket Wisata
@@ -182,13 +219,14 @@ export default function Sidebar({ children }) {
               {/* Profil & Logout di mobile */}
               <div className="border-t p-4">
                 <div className="flex items-center gap-3 mb-3">
-                  <Avatar>
-                    <AvatarImage src={user.avatarUrl} />
-                    <AvatarFallback>{user.name[0]}</AvatarFallback>
+                  <Avatar className={getAvatarColor(adminData.jenis_kelamin)}>
+                    <AvatarFallback>{getInitials(adminData.nama_Lengkap)}</AvatarFallback>
                   </Avatar>
                   <div>
-                    <p className="text-sm font-semibold">{user.name}</p>
-                    <p className="text-xs text-gray-500">{user.email}</p>
+                    <p className="text-sm font-semibold text-black">
+                      {adminData.nama_Lengkap}
+                    </p>
+                    <p className="text-xs text-gray-500">{adminData.username}</p>
                   </div>
                 </div>
                 <Button
@@ -207,6 +245,9 @@ export default function Sidebar({ children }) {
 
       {/* KONTEN UTAMA */}
       <main className="flex-1 overflow-y-auto">{children}</main>
+
+      {/* Profil Modal */}
+      <ProfilModal open={openProfil} onOpenChange={setOpenProfil} adminId={userId} />
     </div>
   );
 }

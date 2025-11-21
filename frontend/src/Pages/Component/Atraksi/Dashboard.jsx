@@ -26,6 +26,17 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import {
+  AlertDialog,
+  AlertDialogTrigger,
+  AlertDialogContent,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogCancel,
+  AlertDialogAction,
+} from "@/components/ui/alert-dialog";
 
 import { toast } from "sonner";
 import axios from "axios";
@@ -34,7 +45,6 @@ function Dashboard() {
   const [openAddModal, setOpenAddModal] = useState(false);
   const [openEditModal, setOpenEditModal] = useState(false);
   const [openDetailModal, setOpenDetailModal] = useState(false);
-  // const [confirmDelete, setConfirmDelete] = useState(null);
   const [selectedData, setSelectedData] = useState(null);
   const [search, setSearch] = useState("");
   const [filterLokasi, setFilterLokasi] = useState("all");
@@ -92,7 +102,7 @@ function Dashboard() {
       prev.map((d) => (d.id === updatedData.id ? updatedData : d))
     );
     toast.success("Data berhasil diperbarui.", {
-       className: "bg-emerald-500 text-white font-medium",
+      className: "bg-emerald-500 text-white font-medium",
     });
   };
 
@@ -121,7 +131,7 @@ function Dashboard() {
     <>
       <SideBar>
         <div className="p-8 bg-gray-50 min-h-screen">
-          <div className="flex justify-between items-center mb-6">
+          <div className="flex justify-between items-center pt-10 mb-6">
             <h1 className="text-2xl font-bold">Daftar Atraksi</h1>
             <Button onClick={() => setOpenAddModal(true)}>Tambah Data</Button>
           </div>
@@ -196,7 +206,7 @@ function Dashboard() {
                         {(currentPage - 1) * itemsPerPage + index + 1}
                       </TableCell>
                       <TableCell>{item.nameEvent}</TableCell>
-                      <TableCell>{item.description}</TableCell>
+                      <TableCell className="whitespace-normal break-words max-w-[300px] text-justify">{item.description}</TableCell>
                       <TableCell>{item.location}</TableCell>
                       <TableCell>
                         {formatTanggal(item.startdate)} -{" "}
@@ -230,13 +240,33 @@ function Dashboard() {
                         >
                           Edit
                         </Button>
-                        <Button
-                          variant="destructive"
-                          size="sm"
-                          onClick={handleDelete.bind(null, item.id)}
-                        >
-                          Hapus
-                        </Button>
+                        {/* Hapus */}
+                        <AlertDialog>
+                          <AlertDialogTrigger asChild>
+                            <Button variant="destructive" size="sm">
+                              Hapus
+                            </Button>
+                          </AlertDialogTrigger>
+                          <AlertDialogContent>
+                            <AlertDialogHeader>
+                              <AlertDialogTitle>
+                                Konfirmasi Hapus
+                              </AlertDialogTitle>
+                              <AlertDialogDescription>
+                                Yakin ingin menghapus{" "}
+                                <strong>{item.nameEvent}</strong>?
+                              </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                              <AlertDialogCancel>Batal</AlertDialogCancel>
+                              <AlertDialogAction
+                                onClick={() => handleDelete(item.id)}
+                              >
+                                Hapus
+                              </AlertDialogAction>
+                            </AlertDialogFooter>
+                          </AlertDialogContent>
+                        </AlertDialog>
                       </TableCell>
                     </TableRow>
                   ))
@@ -282,6 +312,7 @@ function Dashboard() {
             open={openAddModal}
             onClose={() => setOpenAddModal(false)}
             refreshData={fetchData}
+            
           />
 
           {/* ✏️ Modal Edit Data */}
@@ -290,6 +321,7 @@ function Dashboard() {
             onClose={() => setOpenEditModal(false)}
             onSubmit={handleEditData}
             initialData={selectedData}
+            refreshData={fetchData}
           />
 
           {/* 👁️ Modal Detail Data */}

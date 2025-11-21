@@ -8,9 +8,8 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { useEffect } from "react";
 import axios from "axios";
 import { toast } from "sonner";
 
@@ -26,7 +25,7 @@ const AddDataModal = ({ open, onClose, initialData, refreshData }) => {
     location: "",
   });
 
-  // 🟢 Saat modal dibuka, isi form dengan data lama (jika edit)
+
   useEffect(() => {
     if (initialData) {
       setForm({
@@ -70,20 +69,6 @@ const AddDataModal = ({ open, onClose, initialData, refreshData }) => {
       formData.append("enddate", form.enddate);
       formData.append("location", form.location);
 
-      if (initialData) {
-        console.log("🟡 Mulai edit data dengan ID:", initialData.id);
-        console.log("🟡 Data yang dikirim:", form);
-        // 🟢 Mode Edit
-        const res = await axios.put(
-          `http://localhost:3000/api/atraksi/${initialData.id}`,
-          formData
-        );
-        toast.success("Data berhasil diperbarui!");
-        console.log("🟢 Respons backend:", res.data);
-        navigate("/admin/atraksi");
-        onClose();
-        console.log("Edit success:", res.data);
-      } else {
         // 🟢 Mode Tambah
         const res = await axios.post(
           "http://localhost:3000/api/atraksi/insert",
@@ -93,7 +78,7 @@ const AddDataModal = ({ open, onClose, initialData, refreshData }) => {
         navigate("/admin/atraksi");
         onClose();
         console.log("Add success:", res.data);
-      }
+      
 
       refreshData?.();
       onClose();
@@ -103,119 +88,7 @@ const AddDataModal = ({ open, onClose, initialData, refreshData }) => {
     }
   };
 
-  // const createData = async (e) => {
-  //   e.preventDefault();
-  //   try {
-  //     const formData = new FormData();
-  //     formData.append("nameEvent", form.nameEvent);
-  //     formData.append("description", form.description);
-  //     formData.append("foto", form.foto);
-  //     formData.append("startdate", form.startdate);
-  //     formData.append("enddate", form.enddate);
-  //     formData.append("location", form.location);
-  //     const response = await axios.post(
-  //       "http://localhost:3000/api/atraksi/insert",
-  //       formData
-  //     );
-
-  //     const res = response.data;
-  //     setForm(res);
-  //     console.log(res);
-
-  //     setForm({
-  //       nameEvent: "",
-  //       description: "",
-  //       foto: "",
-  //       startdate: "",
-  //       enddate: "",
-  //       location: "",
-  //     });
-  //     if (refreshData) refreshData();
-  //     console.log("tambah data berhasil:", response.data);
-  //     toast.success("Data Atraksi berhasil ditambahkan");
-  //     onClose();
-  //     navigate("/admin/atraksi");
-  //   } catch (error) {
-  //     console.log(error);
-  //   }
-  // };
-
-  // Set form sesuai initialData jika ada (mode edit)
-  // useEffect(() => {
-  //   if (initialData) {
-  //     setForm({
-  //       namaAtraksi: initialData.namaAtraksi || '',
-  //       deskripsi: initialData.deskripsi || '',
-  //       foto: initialData.foto || '',
-  //       tanggalMulai: initialData.tanggalMulai || '',
-  //       tanggalBerakhir: initialData.tanggalBerakhir || '',
-  //       lokasi: initialData.lokasi || ''
-  //     })
-  //   } else {
-  //     setForm({
-  //       namaAtraksi: '',
-  //       deskripsi: '',
-  //       foto: '',
-  //       tanggalMulai: '',
-  //       tanggalBerakhir: '',
-  //       lokasi: ''
-  //     })
-  //   }
-  // }, [initialData, open])
-
-  // const handleChange = e => {
-  //   const { name, value, files } = e.target
-  //   if (name === 'foto') setForm({ ...form, foto: files[0] })
-  //   else setForm({ ...form, [name]: value })
-  // }
-
-  // const handleChange = (e) => {
-  //   const { name, value } = e.target;
-  //   setForm({ ...form, [name]: value });
-  // };
-
-  // const handlePhoto = (e) => {
-  //   const photo = e.target.files[0];
-  //   setForm({ ...form, foto: photo });
-  // };
-
-  // const handleSubmit = async (e) => {
-  //   e.preventDefault();
-
-  //   try {
-  //     const formData = new FormData();
-  //     formData.append("nameEvent", form.nameEvent);
-  //     formData.append("description", form.description);
-  //     formData.append("foto", form.foto);
-  //     formData.append("startdate", form.startdate);
-  //     formData.append("enddate", form.enddate);
-  //     formData.append("location", form.location);
-
-  //     if (initialData) {
-  //       const res = await axios.put(
-  //         `http://localhost:3000/api/atraksi/${id}`,
-  //         formData
-  //       );
-  //       toast.success("Data Atraksi berhasil diperbarui");
-  //       console.log("Edit data berhasil:", res.data);
-  //     } else {
-  //       // 🔹 Mode Tambah
-  //       const res = await axios.post(
-  //         "http://localhost:3000/api/atraksi/insert",
-  //         formData
-  //       );
-  //       toast.success("Data Atraksi berhasil ditambahkan");
-  //       console.log("Tambah data berhasil:", res.data);
-  //     }
-
-  //     if (refreshData) refreshData();
-  //     onClose();
-  //     navigate("/admin/atraksi");
-  //   } catch (error) {
-  //     console.error("Gagal menyimpan data:", error);
-  //     toast.error("Gagal menyimpan data!");
-  //   }
-  // };
+  
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
@@ -234,6 +107,7 @@ const AddDataModal = ({ open, onClose, initialData, refreshData }) => {
                 value={form.nameEvent}
                 onChange={handleChange}
                 placeholder="Masukkan nama atraksi"
+                required
               />
             </div>
 
@@ -244,6 +118,7 @@ const AddDataModal = ({ open, onClose, initialData, refreshData }) => {
                 value={form.description}
                 onChange={handleChange}
                 placeholder="Tulis deskripsi atraksi..."
+                required
               />
             </div>
 
@@ -254,6 +129,7 @@ const AddDataModal = ({ open, onClose, initialData, refreshData }) => {
                 type="file"
                 accept="image/*"
                 onChange={handlePhoto}
+                required={!initialData}
               />
               {form.foto && typeof form.foto === "string" && (
                 <img
@@ -271,6 +147,7 @@ const AddDataModal = ({ open, onClose, initialData, refreshData }) => {
                 type="date"
                 value={form.startdate}
                 onChange={handleChange}
+                required
               />
             </div>
 
@@ -281,6 +158,7 @@ const AddDataModal = ({ open, onClose, initialData, refreshData }) => {
                 type="date"
                 value={form.enddate}
                 onChange={handleChange}
+                required
               />
             </div>
 
@@ -291,14 +169,16 @@ const AddDataModal = ({ open, onClose, initialData, refreshData }) => {
                 value={form.location}
                 onChange={handleChange}
                 placeholder="Masukkan lokasi atraksi"
+                required
               />
             </div>
 
             <div className="flex justify-end gap-2 mt-4">
-              <Button variant="outline" onClick={onClose}>
+              <Button type="button" variant="outline" onClick={onClose}>
                 Batal
               </Button>
-              <Button type="submit">Tambah Data</Button>
+              <Button onClick={handleSubmit}>
+              {initialData ? "Simpan Perubahan" : "Tambah Data"}</Button>
             </div>
           </div>
         </form>

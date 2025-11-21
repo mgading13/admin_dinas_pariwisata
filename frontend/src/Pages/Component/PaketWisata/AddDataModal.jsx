@@ -1,49 +1,131 @@
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import axios from "axios";
+import { toast } from "sonner";
 
-const AddDataModal = ({ open, onClose, onSubmit, initialData }) => {
+const AddDataModal = ({ open, onClose, initialData, refreshData }) => {
+  const navigate = useNavigate();
+
   const [form, setForm] = useState({
-    jenisWisata: "",
+    nama_wisata: "",
     lokasi: "",
-    deskripsi: "",
     harga: "",
-    foto: null,
+    deskripsi: "",
+    kontak: "",
+    media: "",
   });
 
-  // 🔁 Set form sesuai initialData jika mode edit
   useEffect(() => {
     if (initialData) {
       setForm({
-        jenisWisata: initialData.jenisWisata || "",
+        nama_wisata: initialData.nama_wisata || "",
         lokasi: initialData.lokasi || "",
         deskripsi: initialData.deskripsi || "",
         harga: initialData.harga || "",
-        foto: initialData.foto || null,
+        kontak: initialData.kontak || "",
+        media: initialData.media || "",
       });
     } else {
       setForm({
-        jenisWisata: "",
+        nama_wisata: "",
         lokasi: "",
         deskripsi: "",
         harga: "",
-        foto: null,
+        kontak: "",
+        media: "",
       });
     }
   }, [initialData, open]);
 
-  const handleChange = (e) => {
-    const { name, value, files } = e.target;
-    if (name === "foto") setForm({ ...form, foto: files[0] });
-    else setForm({ ...form, [name]: value });
+  const formatCurrency = (value) => {
+    if (!value) return "";
+    return "Rp " + value.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
   };
 
-  const handleSubmit = () => {
-    onSubmit(form);
-    onClose();
+  const formatPhoneDisplay = (value) => {
+    if (!value) return "";
+    const cleaned = value.replace(/\D/g, "").slice(0, 12); // max 12 digit
+    return cleaned.replace(/(\d{4})(\d{4})(\d{0,4})/, (_, a, b, c) =>
+      c ? `${a}-${b}-${c}` : `${a}-${b}`
+    );
+  };
+
+  const formatPhoneToDB = (value) => {
+    if (!value) return "";
+    let cleaned = value.replace(/\D/g, "");
+    if (cleaned.startsWith("0")) cleaned = "62" + cleaned.slice(1);
+    return cleaned;
+  };
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+
+    if (name === "harga") {
+      const raw = value.replace(/\D/g, "");
+      setForm({
+        ...form,
+        harga: raw,
+        hargaDisplay: formatCurrency(raw),
+      });
+      return;
+    }
+
+    if (name === "kontak") {
+      const raw = value.replace(/\D/g, ""); // remove non numbers
+      setForm({
+        ...form,
+        kontak: formatPhoneDisplay(raw), // UI
+        kontak_raw: raw, // storage
+      });
+      return;
+    }
+
+    setForm({ ...form, [name]: value });
+  };
+
+  const handlePhoto = (e) => {
+    const file = e.target.files[0];
+    setForm({ ...form, media: file });
+  };
+
+  const handleSubmit = async (e) => {
+    const kontakDB = formatPhoneToDB(form.kontak_raw);
+    e.preventDefault();
+    try {
+      const formData = new FormData();
+      formData.append("nama_wisata", form.nama_wisata);
+      formData.append("lokasi", form.lokasi);
+      formData.append("deskripsi", form.deskripsi);
+      formData.append("harga", form.harga);
+      formData.append("kontak", kontakDB);
+      formData.append("media", form.media);
+
+      // 🟢 Mode Tambah
+      const res = await axios.post(
+        "http://localhost:3000/api/tourPackage/insert",
+        formData
+      );
+      toast.success("Data berhasil ditambahkan!");
+      navigate("/admin/paket-wisata");
+      onClose();
+      console.log("Add success:", res.data);
+
+      refreshData?.();
+      onClose();
+    } catch (error) {
+      console.error("Error:", error);
+      toast.error("Gagal menyimpan data!");
+    }
   };
 
   return (
@@ -58,12 +140,13 @@ const AddDataModal = ({ open, onClose, onSubmit, initialData }) => {
         <div className="space-y-4 mt-4">
           {/* Jenis Wisata */}
           <div>
-            <Label>Jenis Wisata</Label>
+            <Label>Nama Wisata</Label>
             <Input
-              name="jenisWisata"
-              value={form.jenisWisata}
+              name="nama_wisata"
+              value={form.nama_wisata}
               onChange={handleChange}
-              placeholder="Masukkan jenis wisata (contoh: Wisata Alam, Kuliner, Religi, dsb)"
+              placeholder="Masukkan nama wisata"
+              required
             />
           </div>
           <div>
@@ -72,30 +155,40 @@ const AddDataModal = ({ open, onClose, onSubmit, initialData }) => {
               name="lokasi"
               value={form.lokasi}
               onChange={handleChange}
-              placeholder="Masukkan Lokasi (contoh: Kota Palu, Kabupaten Poso, dsb)"
+              placeholder="Masukkan lokasi wisata"
+              required
             />
           </div>
-
-          {/* Deskripsi */}
           <div>
             <Label>Deskripsi</Label>
             <Textarea
               name="deskripsi"
               value={form.deskripsi}
               onChange={handleChange}
-              placeholder="Tulis deskripsi tentang wisata..."
+              placeholder="Tuliskan deskripsi tentang wisata..."
+              required
             />
           </div>
 
-          {/* Harga */}
           <div>
             <Label>Harga (Rp)</Label>
             <Input
               name="harga"
-              type="number"
-              value={form.harga}
+              value={form.hargaDisplay ?? ""}
               onChange={handleChange}
-              placeholder="Masukkan harga tiket / paket wisata"
+              placeholder="Masukkan Harga Paket Wisata"
+              required
+            />
+          </div>
+
+          <div>
+            <Label>Kontak</Label>
+            <Input
+              name="kontak"
+              value={form.kontak}
+              onChange={handleChange}
+              placeholder="Masukkan Kontak Paket Wisata"
+              required
             />
           </div>
 
@@ -103,14 +196,15 @@ const AddDataModal = ({ open, onClose, onSubmit, initialData }) => {
           <div>
             <Label>Foto</Label>
             <Input
-              name="foto"
+              name="media"
               type="file"
               accept="image/*"
-              onChange={handleChange}
+              onChange={handlePhoto}
+              required={!initialData}
             />
-            {form.foto && typeof form.foto === "string" && (
+            {form.media && typeof form.media === "string" && (
               <img
-                src={form.foto}
+                src={form.media}
                 alt="Preview"
                 className="mt-2 w-24 h-24 object-cover rounded-md border"
               />
@@ -119,7 +213,7 @@ const AddDataModal = ({ open, onClose, onSubmit, initialData }) => {
 
           {/* Tombol Aksi */}
           <div className="flex justify-end gap-2 mt-4">
-            <Button variant="outline" onClick={onClose}>
+            <Button type="button" variant="outline" onClick={onClose}>
               Batal
             </Button>
             <Button onClick={handleSubmit}>

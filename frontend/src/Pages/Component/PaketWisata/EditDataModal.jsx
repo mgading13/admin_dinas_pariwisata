@@ -4,48 +4,79 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useState, useEffect } from "react";
+import axios from "axios";
+import { toast } from "sonner";
 
-const EditDataModal = ({ open, onClose, onSubmit, initialData }) => {
+const EditDataModal = ({ open, onClose, initialData, refreshData }) => {
   const [form, setForm] = useState({
-    jenisWisata: "",
+    nama_wisata: "",
     lokasi: "",
     deskripsi: "",
     harga: "",
-    foto: null,
+    kontak: "",
+    media: "",
   });
 
   // Isi otomatis form jika sedang edit
   useEffect(() => {
     if (initialData) {
       setForm({
-        jenisWisata: initialData.jenisWisata || "",
+        nama_wisata: initialData.nama_wisata || "",
         lokasi: initialData.lokasi || "",
         deskripsi: initialData.deskripsi || "",
         harga: initialData.harga || "",
-        foto: initialData.foto || null,
+        kontak: initialData.kontak || "",
+        media: initialData.media || "",
       });
     } else {
       setForm({
-        jenisWisata: "",
+        nama_wisata: "",
         lokasi: "",
         deskripsi: "",
         harga: "",
-        foto: null,
+        kontak: "",
+        media: "",
       });
     }
   }, [initialData, open]);
 
   const handleChange = (e) => {
     const { name, value, files } = e.target;
-    if (name === "foto") setForm({ ...form, foto: files[0] });
+    if (name === "media") setForm({ ...form, media: files[0] });
     else setForm({ ...form, [name]: value });
   };
 
-  const handleSubmit = () => {
-    onSubmit(form);
-    onClose();
-  };
+  const handleSubmit = async (e) => {
+    e.preventDefault();
 
+    try {
+      const formData = new FormData();
+      formData.append("nama_wisata", form.nama_wisata);
+      formData.append("lokasi", form.lokasi);
+      formData.append("deskripsi", form.deskripsi);
+      formData.append("harga", form.harga);
+      formData.append("kontak", form.kontak);
+      formData.append("media", form.media);
+
+      console.log("🟡 Mengirim data edit ke backend:", form);
+
+      const res = await axios.patch(
+        `http://localhost:3000/api/tourPackage/${initialData.id}`,
+        formData,
+        {
+          headers: { "Content-Type": "multipart/form-data" },
+        }
+      );
+
+      console.log("🟢 Respons backend:", res.data);
+      toast.success("Paket Wisata berhasil diperbarui!");
+      await refreshData?.();
+      onClose();
+    } catch (error) {
+      console.error("❌ Gagal memperbarui data:", error);
+      toast.error("Gagal memperbarui Paket Wisata!");
+    }
+  };
   return (
     <Dialog open={open} onOpenChange={onClose}>
       <DialogContent className="max-w-md">
@@ -55,17 +86,16 @@ const EditDataModal = ({ open, onClose, onSubmit, initialData }) => {
 
         <div className="space-y-4 mt-4">
           <div>
-            <Label>Jenis Wisata</Label> 
+            <Label>Nama Wisata</Label> 
             <Input
-              name="jenisWisata"
-              value={form.jenisWisata}
+              name="nama_wisata"
+              value={form.nama_wisata}
               onChange={handleChange}
               placeholder="Masukkan jenis wisata"
             />
           </div>
-
           <div>
-            <Label>Lokasi</Label>
+            <Label>Lokasi</Label> 
             <Input
               name="lokasi"
               value={form.lokasi}
@@ -94,18 +124,28 @@ const EditDataModal = ({ open, onClose, onSubmit, initialData }) => {
               placeholder="Masukkan harga wisata"
             />
           </div>
+          <div>
+            <Label>Kontak</Label>
+            <Input
+              name="kontak"
+              type="number"
+              value={form.kontak}
+              onChange={handleChange}
+              placeholder="Masukkan kontak paket wisata"
+            />
+          </div>
 
           <div>
             <Label>Foto</Label>
             <Input
-              name="foto"
+              name="media"
               type="file"
               accept="image/*"
               onChange={handleChange}
             />
-            {form.foto && typeof form.foto === "string" && (
+            {form.media && typeof form.media === "string" && (
               <img
-                src={form.foto}
+                src={form.media}
                 alt="Preview"
                 className="mt-2 w-24 h-24 object-cover rounded-md border"
               />
@@ -113,7 +153,7 @@ const EditDataModal = ({ open, onClose, onSubmit, initialData }) => {
           </div>
 
           <div className="flex justify-end gap-2 mt-4">
-            <Button variant="outline" onClick={onClose}>
+            <Button type="button" variant="outline" onClick={onClose}>
               Batal
             </Button>
             <Button onClick={handleSubmit}>Simpan Perubahan</Button>
