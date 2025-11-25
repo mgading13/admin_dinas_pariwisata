@@ -30,28 +30,6 @@ export default function Sidebar({ children }) {
     username: "",
   });
 
-  // Ambil inisial nama
-  const getInitials = (name) => {
-    if (!name) return "A";
-    return name
-      .split(" ")
-      .map((n) => n[0])
-      .join("")
-      .toUpperCase();
-  };
-
-  // Tentukan warna avatar
-  const getAvatarColor = (gender) => {
-    switch (gender) {
-      case "laki-laki":
-        return "bg-blue-500 text-white";
-      case "perempuan":
-        return "bg-pink-500 text-white";
-      default:
-        return "bg-gray-400 text-white";
-    }
-  };
-
   useEffect(() => {
     if (!userId) return;
 
@@ -79,6 +57,27 @@ export default function Sidebar({ children }) {
   };
 
   const isActive = (path) => location.pathname === path;
+  // Mendapatkan inisial nama
+  const getInitials = (name) => {
+    if (!name) return "A";
+    return name
+      .split(" ")
+      .map((n) => n[0])
+      .join("")
+      .toUpperCase();
+  };
+
+  // Mengatur warna avatar berdasarkan gender
+  const getAvatarColor = (gender) => {
+    switch (gender?.toLowerCase()) {
+      case "laki-laki":
+        return "bg-blue-500 text-white";
+      case "perempuan":
+        return "bg-pink-500 text-white";
+      default:
+        return "bg-gray-400 text-white";
+    }
+  };
 
   return (
     <div className="flex min-h-screen bg-gray-100">
@@ -119,7 +118,9 @@ export default function Sidebar({ children }) {
             >
               <Package
                 className={`h-5 w-5 ${
-                  isActive("/admin/paket-wisata") ? "text-green-600" : "text-green-500"
+                  isActive("/admin/paket-wisata")
+                    ? "text-green-600"
+                    : "text-green-500"
                 }`}
               />
               Paket Wisata
@@ -135,9 +136,16 @@ export default function Sidebar({ children }) {
                 variant="ghost"
                 className="w-full flex items-center justify-start gap-3"
               >
-                <Avatar className={getAvatarColor(adminData.jenis_kelamin)}>
-                  <AvatarFallback>{getInitials(adminData.nama_Lengkap)}</AvatarFallback>
+                <Avatar>
+                  <AvatarFallback
+                    className={`${getAvatarColor(
+                      adminData.jenis_kelamin
+                    )} font-medium`}
+                  >
+                    {getInitials(adminData.nama_Lengkap)}
+                  </AvatarFallback>
                 </Avatar>
+
                 <div className="text-left">
                   <p className="text-sm font-semibold text-black">
                     {adminData.nama_Lengkap}
@@ -190,7 +198,9 @@ export default function Sidebar({ children }) {
                   >
                     <MapPin
                       className={`h-5 w-5 ${
-                        isActive("/admin/atraksi") ? "text-blue-600" : "text-blue-500"
+                        isActive("/admin/atraksi")
+                          ? "text-blue-600"
+                          : "text-blue-500"
                       }`}
                     />
                     Atraksi
@@ -208,7 +218,9 @@ export default function Sidebar({ children }) {
                   >
                     <Package
                       className={`h-5 w-5 ${
-                        isActive("/admin/paket-wisata") ? "text-green-600" : "text-green-500"
+                        isActive("/admin/paket-wisata")
+                          ? "text-green-600"
+                          : "text-green-500"
                       }`}
                     />
                     Paket Wisata
@@ -218,25 +230,48 @@ export default function Sidebar({ children }) {
 
               {/* Profil & Logout di mobile */}
               <div className="border-t p-4">
-                <div className="flex items-center gap-3 mb-3">
-                  <Avatar className={getAvatarColor(adminData.jenis_kelamin)}>
-                    <AvatarFallback>{getInitials(adminData.nama_Lengkap)}</AvatarFallback>
-                  </Avatar>
-                  <div>
-                    <p className="text-sm font-semibold text-black">
-                      {adminData.nama_Lengkap}
-                    </p>
-                    <p className="text-xs text-gray-500">{adminData.username}</p>
-                  </div>
-                </div>
-                <Button
-                  variant="destructive"
-                  className="w-full"
-                  onClick={handleLogout}
-                >
-                  <LogOut className="h-4 w-4 mr-2" />
-                  Logout
-                </Button>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <div className="flex items-center gap-3 mb-3 cursor-pointer">
+                      <Avatar>
+                        <AvatarFallback
+                          className={`${getAvatarColor(
+                            adminData.jenis_kelamin
+                          )} font-medium`}
+                        >
+                          {getInitials(adminData.nama_Lengkap)}
+                        </AvatarFallback>
+                      </Avatar>
+
+                      <div>
+                        <p className="text-sm font-semibold text-black">
+                          {adminData.nama_Lengkap}
+                        </p>
+                        <p className="text-xs text-gray-500">
+                          {adminData.username}
+                        </p>
+                      </div>
+                    </div>
+                  </DropdownMenuTrigger>
+
+                  <DropdownMenuContent align="start" className="w-48">
+                    <DropdownMenuLabel>Akun</DropdownMenuLabel>
+                    <DropdownMenuSeparator />
+
+                    <DropdownMenuItem onClick={() => setOpenProfil(true)}>
+                      <User className="mr-2 h-4 w-4" /> Lihat Profil
+                    </DropdownMenuItem>
+
+                    <DropdownMenuSeparator />
+
+                    <DropdownMenuItem
+                      onClick={handleLogout}
+                      className="text-red-600"
+                    >
+                      <LogOut className="mr-2 h-4 w-4" /> Logout
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
               </div>
             </div>
           </SheetContent>
@@ -247,7 +282,11 @@ export default function Sidebar({ children }) {
       <main className="flex-1 overflow-y-auto">{children}</main>
 
       {/* Profil Modal */}
-      <ProfilModal open={openProfil} onOpenChange={setOpenProfil} adminId={userId} />
+      <ProfilModal
+        open={openProfil}
+        onOpenChange={setOpenProfil}
+        adminId={userId}
+      />
     </div>
   );
 }

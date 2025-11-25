@@ -36,6 +36,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Label } from "@/components/ui/label";
+
 import { toast } from "sonner";
 import axios from "axios";
 
@@ -137,29 +139,24 @@ function Dashboard() {
           />
 
           <Select
-              value={filterLokasi}
-              onValueChange={(val) => {
-                setFilterLokasi(val);
-                setCurrentPage(1);
-              }}
-            >
-              <SelectTrigger className="w-full md:w-1/4">
-                <SelectValue placeholder="Filter Lokasi" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Semua Lokasi</SelectItem>
-                {[...new Set(data.map((d) => d.lokasi))].map(
-                  (lokasi, index) => (
-                    <SelectItem
-                      key={lokasi || index}
-                      value={lokasi || "unknown"}
-                    >
-                      {lokasi || "Tidak diketahui"}
-                    </SelectItem>
-                  )
-                )}
-              </SelectContent>
-            </Select>
+            value={filterLokasi}
+            onValueChange={(val) => {
+              setFilterLokasi(val);
+              setCurrentPage(1);
+            }}
+          >
+            <SelectTrigger className="w-full md:w-1/4">
+              <SelectValue placeholder="Filter Lokasi" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Semua Lokasi</SelectItem>
+              {[...new Set(data.map((d) => d.lokasi))].map((lokasi, index) => (
+                <SelectItem key={lokasi || index} value={lokasi || "unknown"}>
+                  {lokasi || "Tidak diketahui"}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
 
         {/* 📊 Tabel Data */}
@@ -196,10 +193,12 @@ function Dashboard() {
                     </TableCell>
                     <TableCell>{item.nama_wisata}</TableCell>
                     <TableCell>{item.lokasi}</TableCell>
-                    <TableCell className="max-w-xs truncate">
+                    <TableCell className="whitespace-normal break-words max-w-[300px] text-justify">
                       {item.deskripsi}
                     </TableCell>
-                    <TableCell>Rp. {Number(item.harga).toLocaleString("id-ID")}</TableCell>
+                    <TableCell>
+                      Rp. {Number(item.harga).toLocaleString("id-ID")}
+                    </TableCell>
                     <TableCell>{item.kontak}</TableCell>
 
                     <TableCell>
@@ -324,25 +323,27 @@ function Dashboard() {
             </DialogHeader>
 
             {selectedData && (
-              <div className="space-y-2 text-sm mt-3">
-                <p>
-                  <strong>Nama Wisata:</strong> {selectedData.nama_wisata}
-                </p>
-                <p>
-                  <strong>Deskripsi:</strong> {selectedData.deskripsi}
-                </p>
-                <p>
-                  <strong>Harga:</strong> Rp{" "}
-                  {selectedData.harga.toLocaleString("id-ID")}
-                </p>
-                <p>
-                  <strong>Kontak:</strong> {selectedData.kontak}
-                </p>
-
+              <div className="space-y-2 mt-3 gap-2 flex flex-col text-md">
+                <div className="flex flex-col gap-1">
+                  <Label className="font-bold">Nama Wisata :</Label>
+                  <p>{selectedData.nama_wisata}</p>
+                </div>
+                <div className="flex flex-col gap-1">
+                  <Label className="font-bold">Deskripsi :</Label>
+                  <p className="text-justify">{selectedData.deskripsi}</p>
+                </div>
+                <div className="flex flex-col gap-1">
+                  <Label className="font-bold">Harga :</Label>
+                  <p>Rp. {Number(selectedData.harga).toLocaleString("id-ID")}</p>
+                </div>
+                <div className="flex flex-col gap-1">
+                  <Label className="font-bold">Kontak :</Label>
+                  <p>{selectedData.kontak}</p>
+                </div>
                 <img
                   src={`http://localhost:3000${selectedData.media}`}
                   alt={selectedData.nama_wisata}
-                  className="w-full h-48 object-cover rounded-lg mt-2"
+                  className="w-full h-100 object-cover rounded-lg mt-2"
                 />
               </div>
             )}

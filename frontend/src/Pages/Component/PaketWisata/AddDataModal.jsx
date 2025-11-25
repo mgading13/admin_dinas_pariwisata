@@ -139,7 +139,7 @@ const AddDataModal = ({ open, onClose, initialData, refreshData }) => {
 
         <div className="space-y-4 mt-4">
           {/* Jenis Wisata */}
-          <div>
+          <div className="flex flex-col gap-2">
             <Label>Nama Wisata</Label>
             <Input
               name="nama_wisata"
@@ -149,7 +149,7 @@ const AddDataModal = ({ open, onClose, initialData, refreshData }) => {
               required
             />
           </div>
-          <div>
+          <div className="flex flex-col gap-2">
             <Label>Lokasi</Label>
             <Input
               name="lokasi"
@@ -158,8 +158,8 @@ const AddDataModal = ({ open, onClose, initialData, refreshData }) => {
               placeholder="Masukkan lokasi wisata"
               required
             />
-          </div>
-          <div>
+          </div >
+          <div className="flex flex-col gap-2">
             <Label>Deskripsi</Label>
             <Textarea
               name="deskripsi"
@@ -170,7 +170,7 @@ const AddDataModal = ({ open, onClose, initialData, refreshData }) => {
             />
           </div>
 
-          <div>
+          <div className="flex flex-col gap-2">
             <Label>Harga (Rp)</Label>
             <Input
               name="harga"
@@ -181,7 +181,7 @@ const AddDataModal = ({ open, onClose, initialData, refreshData }) => {
             />
           </div>
 
-          <div>
+          <div className="flex flex-col gap-2">
             <Label>Kontak</Label>
             <Input
               name="kontak"
@@ -193,7 +193,7 @@ const AddDataModal = ({ open, onClose, initialData, refreshData }) => {
           </div>
 
           {/* Foto */}
-          <div>
+          <div className="flex flex-col gap-2">
             <Label>Foto</Label>
             <Input
               name="media"

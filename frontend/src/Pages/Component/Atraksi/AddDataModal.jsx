@@ -25,7 +25,6 @@ const AddDataModal = ({ open, onClose, initialData, refreshData }) => {
     location: "",
   });
 
-
   useEffect(() => {
     if (initialData) {
       setForm({
@@ -69,16 +68,15 @@ const AddDataModal = ({ open, onClose, initialData, refreshData }) => {
       formData.append("enddate", form.enddate);
       formData.append("location", form.location);
 
-        // 🟢 Mode Tambah
-        const res = await axios.post(
-          "http://localhost:3000/api/atraksi/insert",
-          formData
-        );
-        toast.success("Data berhasil ditambahkan!");
-        navigate("/admin/atraksi");
-        onClose();
-        console.log("Add success:", res.data);
-      
+      // 🟢 Mode Tambah
+      const res = await axios.post(
+        "http://localhost:3000/api/atraksi/insert",
+        formData
+      );
+      toast.success("Data berhasil ditambahkan!");
+      navigate("/admin/atraksi");
+      onClose();
+      console.log("Add success:", res.data);
 
       refreshData?.();
       onClose();
@@ -87,8 +85,6 @@ const AddDataModal = ({ open, onClose, initialData, refreshData }) => {
       toast.error("Gagal menyimpan data!");
     }
   };
-
-  
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
@@ -100,7 +96,7 @@ const AddDataModal = ({ open, onClose, initialData, refreshData }) => {
         </DialogHeader>
         <form onSubmit={handleSubmit}>
           <div className="space-y-4 mt-4">
-            <div>
+            <div className="flex flex-col gap-2">
               <Label>Nama Atraksi</Label>
               <Input
                 name="nameEvent"
@@ -110,8 +106,18 @@ const AddDataModal = ({ open, onClose, initialData, refreshData }) => {
                 required
               />
             </div>
+            <div className="flex flex-col gap-2">
+              <Label>Lokasi</Label>
+              <Input
+                name="location"
+                value={form.location}
+                onChange={handleChange}
+                placeholder="Masukkan lokasi atraksi"
+                required
+              />
+            </div>
 
-            <div>
+            <div className="flex flex-col gap-2">
               <Label>Deskripsi</Label>
               <Textarea
                 name="description"
@@ -122,7 +128,28 @@ const AddDataModal = ({ open, onClose, initialData, refreshData }) => {
               />
             </div>
 
-            <div>
+            <div className="flex flex-col gap-2">
+              <Label>Tanggal Mulai</Label>
+              <Input
+                name="startdate"
+                type="date"
+                value={form.startdate}
+                onChange={handleChange}
+                required
+              />
+            </div>
+
+            <div className="flex flex-col gap-2">
+              <Label>Tanggal Berakhir</Label>
+              <Input
+                name="enddate"
+                type="date"
+                value={form.enddate}
+                onChange={handleChange}
+                required
+              />
+            </div>
+            <div className="flex flex-col gap-2">
               <Label>Foto</Label>
               <Input
                 name="foto"
@@ -140,45 +167,13 @@ const AddDataModal = ({ open, onClose, initialData, refreshData }) => {
               )}
             </div>
 
-            <div>
-              <Label>Tanggal Mulai</Label>
-              <Input
-                name="startdate"
-                type="date"
-                value={form.startdate}
-                onChange={handleChange}
-                required
-              />
-            </div>
-
-            <div>
-              <Label>Tanggal Berakhir</Label>
-              <Input
-                name="enddate"
-                type="date"
-                value={form.enddate}
-                onChange={handleChange}
-                required
-              />
-            </div>
-
-            <div>
-              <Label>Lokasi</Label>
-              <Input
-                name="location"
-                value={form.location}
-                onChange={handleChange}
-                placeholder="Masukkan lokasi atraksi"
-                required
-              />
-            </div>
-
             <div className="flex justify-end gap-2 mt-4">
               <Button type="button" variant="outline" onClick={onClose}>
                 Batal
               </Button>
               <Button onClick={handleSubmit}>
-              {initialData ? "Simpan Perubahan" : "Tambah Data"}</Button>
+                {initialData ? "Simpan Perubahan" : "Tambah Data"}
+              </Button>
             </div>
           </div>
         </form>

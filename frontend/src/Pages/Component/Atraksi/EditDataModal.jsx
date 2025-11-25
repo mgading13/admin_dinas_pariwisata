@@ -60,10 +60,12 @@ const EditDataModal = ({ open, onClose, initialData, refreshData }) => {
       const formData = new FormData();
       formData.append("nameEvent", form.nameEvent);
       formData.append("description", form.description);
-      formData.append("foto", form.foto);
       formData.append("startdate", form.startdate);
       formData.append("enddate", form.enddate);
       formData.append("location", form.location);
+      if (form.foto && typeof form.foto !== "string") {
+        formData.append("foto", form.foto);
+      }
 
       console.log("🟡 Mengirim data edit ke backend:", form);
 
@@ -94,7 +96,7 @@ const EditDataModal = ({ open, onClose, initialData, refreshData }) => {
 
         <form onSubmit={handleSubmit}>
           <div className="space-y-4 mt-4">
-            <div>
+            <div className="flex flex-col gap-2">
               <Label>Nama Atraksi</Label>
               <Input
                 name="nameEvent"
@@ -103,8 +105,17 @@ const EditDataModal = ({ open, onClose, initialData, refreshData }) => {
                 placeholder="Masukkan nama atraksi"
               />
             </div>
+            <div className="flex flex-col gap-2">
+              <Label>Lokasi</Label>
+              <Input
+                name="location"
+                value={form.location}
+                onChange={handleChange}
+                placeholder="Masukkan lokasi atraksi"
+              />
+            </div>
 
-            <div>
+            <div className="flex flex-col gap-2">
               <Label>Deskripsi</Label>
               <Textarea
                 name="description"
@@ -114,24 +125,7 @@ const EditDataModal = ({ open, onClose, initialData, refreshData }) => {
               />
             </div>
 
-            <div>
-              <Label>Foto</Label>
-              <Input
-                name="foto"
-                type="file"
-                accept="image/*"
-                onChange={handleChange}
-              />
-              {form.foto && typeof form.foto === "string" && (
-                <img
-                  src={form.foto}
-                  alt="Preview"
-                  className="mt-2 w-24 h-24 object-cover rounded-md border"
-                />
-              )}
-            </div>
-
-            <div>
+            <div className="flex flex-col gap-2">
               <Label>Tanggal Mulai</Label>
               <Input
                 name="startdate"
@@ -141,7 +135,7 @@ const EditDataModal = ({ open, onClose, initialData, refreshData }) => {
               />
             </div>
 
-            <div>
+            <div className="flex flex-col gap-2">
               <Label>Tanggal Berakhir</Label>
               <Input
                 name="enddate"
@@ -151,14 +145,21 @@ const EditDataModal = ({ open, onClose, initialData, refreshData }) => {
               />
             </div>
 
-            <div>
-              <Label>Lokasi</Label>
+            <div className="flex flex-col gap-2">
+              <Label>Foto</Label>
               <Input
-                name="location"
-                value={form.location}
+                name="foto"
+                type="file"
+                accept="image/*"
                 onChange={handleChange}
-                placeholder="Masukkan lokasi atraksi"
               />
+              {form.foto && typeof form.foto === "string" && (
+                <img
+                  src={`http://localhost:3000${form.foto}`}
+                  alt="Preview"
+                  className="mt-2 w-24 h-24 object-cover rounded-md border"
+                />
+              )}
             </div>
 
             <div className="flex justify-end gap-2 mt-4">

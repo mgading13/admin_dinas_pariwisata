@@ -81,11 +81,11 @@ const EditDataModal = ({ open, onClose, initialData, refreshData }) => {
     <Dialog open={open} onOpenChange={onClose}>
       <DialogContent className="max-w-md">
         <DialogHeader>
-          <DialogTitle>Edit Data Wisata</DialogTitle>
+          <DialogTitle>Edit Paket Wisata</DialogTitle>
         </DialogHeader>
 
         <div className="space-y-4 mt-4">
-          <div>
+          <div className="flex flex-col gap-2">
             <Label>Nama Wisata</Label> 
             <Input
               name="nama_wisata"
@@ -94,7 +94,7 @@ const EditDataModal = ({ open, onClose, initialData, refreshData }) => {
               placeholder="Masukkan jenis wisata"
             />
           </div>
-          <div>
+          <div className="flex flex-col gap-2">
             <Label>Lokasi</Label> 
             <Input
               name="lokasi"
@@ -104,7 +104,7 @@ const EditDataModal = ({ open, onClose, initialData, refreshData }) => {
             />
           </div>
 
-          <div>
+          <div className="flex flex-col gap-2">
             <Label>Deskripsi</Label>
             <Textarea
               name="deskripsi"
@@ -114,7 +114,7 @@ const EditDataModal = ({ open, onClose, initialData, refreshData }) => {
             />
           </div>
 
-          <div>
+          <div className="flex flex-col gap-2">
             <Label>Harga</Label>
             <Input
               name="harga"
@@ -124,7 +124,7 @@ const EditDataModal = ({ open, onClose, initialData, refreshData }) => {
               placeholder="Masukkan harga wisata"
             />
           </div>
-          <div>
+          <div className="flex flex-col gap-2">
             <Label>Kontak</Label>
             <Input
               name="kontak"
@@ -135,7 +135,7 @@ const EditDataModal = ({ open, onClose, initialData, refreshData }) => {
             />
           </div>
 
-          <div>
+          <div className="flex flex-col gap-2">
             <Label>Foto</Label>
             <Input
               name="media"
@@ -145,7 +145,7 @@ const EditDataModal = ({ open, onClose, initialData, refreshData }) => {
             />
             {form.media && typeof form.media === "string" && (
               <img
-                src={form.media}
+                src={`http://localhost:3000${form.media}`}
                 alt="Preview"
                 className="mt-2 w-24 h-24 object-cover rounded-md border"
               />

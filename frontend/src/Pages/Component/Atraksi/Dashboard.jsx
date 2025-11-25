@@ -5,7 +5,6 @@ import SideBar from "../SideBar";
 import {
   Table,
   TableBody,
-  TableCaption,
   TableCell,
   TableHead,
   TableHeader,
@@ -37,7 +36,7 @@ import {
   AlertDialogCancel,
   AlertDialogAction,
 } from "@/components/ui/alert-dialog";
-
+import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import axios from "axios";
 
@@ -101,17 +100,13 @@ function Dashboard() {
     setData((prev) =>
       prev.map((d) => (d.id === updatedData.id ? updatedData : d))
     );
-    toast.success("Data berhasil diperbarui.", {
-      className: "bg-emerald-500 text-white font-medium",
-    });
+    toast.success("Data berhasil diperbarui.");
   };
 
   const handleDelete = async (id) => {
     try {
       await axios.delete(`http://localhost:3000/api/atraksi/${id}`);
-      toast.error("Data berhasil dihapus.", {
-        className: "bg-red-500 text-white font-medium",
-      });
+      toast.error("Data berhasil dihapus.");
       setData((prev) => prev.filter((d) => d.id !== id));
     } catch (err) {
       toast.error("Gagal menghapus data.");
@@ -206,7 +201,9 @@ function Dashboard() {
                         {(currentPage - 1) * itemsPerPage + index + 1}
                       </TableCell>
                       <TableCell>{item.nameEvent}</TableCell>
-                      <TableCell className="whitespace-normal break-words max-w-[300px] text-justify">{item.description}</TableCell>
+                      <TableCell className="whitespace-normal break-words max-w-[300px] text-justify">
+                        {item.description}
+                      </TableCell>
                       <TableCell>{item.location}</TableCell>
                       <TableCell>
                         {formatTanggal(item.startdate)} -{" "}
@@ -312,7 +309,6 @@ function Dashboard() {
             open={openAddModal}
             onClose={() => setOpenAddModal(false)}
             refreshData={fetchData}
-            
           />
 
           {/* ✏️ Modal Edit Data */}
@@ -331,40 +327,46 @@ function Dashboard() {
                 <DialogTitle>Detail Atraksi</DialogTitle>
               </DialogHeader>
               {selectedData && (
-                <div className="space-y-2 text-sm mt-3">
-                  <p>
-                    <strong>Nama Atraksi:</strong> {selectedData.nameEvent}
-                  </p>
-                  <p>
-                    <strong>Deskripsi:</strong> {selectedData.description}
-                  </p>
-                  <p>
-                    <strong>Lokasi:</strong> {selectedData.location}
-                  </p>
-                  <p>
-                    <strong>Tanggal:</strong>{" "}
-                    {new Date(selectedData.startdate).toLocaleDateString(
-                      "id-ID",
-                      {
-                        day: "numeric",
-                        month: "long",
-                        year: "numeric",
-                      }
-                    )}{" "}
-                    -{" "}
-                    {new Date(selectedData.enddate).toLocaleDateString(
-                      "id-ID",
-                      {
-                        day: "numeric",
-                        month: "long",
-                        year: "numeric",
-                      }
-                    )}
-                  </p>
+                <div className="space-y-2 mt-3 gap-2 flex flex-col text-md">
+                  <div className="flex flex-col gap-1">
+                    <Label className="font-bold">Nama Atraksi :</Label>
+                    <p>{selectedData.nameEvent}</p>
+                  </div>
+                  <div className="flex flex-col gap-1">
+                    <Label className="font-bold">Deskripsi :</Label>
+                    <p className="text-justify">{selectedData.description}</p>
+                  </div>
+                  <div className="flex flex-col gap-1">
+                    <Label className="font-bold">Lokasi :</Label>
+                    <p>{selectedData.location}</p>
+                  </div>
+                  <div className="flex flex-col gap-1">
+                    <Label className="font-bold">Tanggal :</Label>
+                    <p>
+                      <strong>Tanggal:</strong>{" "}
+                      {new Date(selectedData.startdate).toLocaleDateString(
+                        "id-ID",
+                        {
+                          day: "numeric",
+                          month: "long",
+                          year: "numeric",
+                        }
+                      )}{" "}
+                      -{" "}
+                      {new Date(selectedData.enddate).toLocaleDateString(
+                        "id-ID",
+                        {
+                          day: "numeric",
+                          month: "long",
+                          year: "numeric",
+                        }
+                      )}
+                    </p>
+                  </div>
                   <img
                     src={`http://localhost:3000${selectedData.foto}`}
-                    alt={selectedData.nameEvent}
-                    className="w-full h-70 object-cover rounded-lg mt-2"
+                    alt={selectedData.nama_wisata}
+                    className="w-full h-100 object-cover rounded-lg mt-2"
                   />
                 </div>
               )}
