@@ -12,9 +12,10 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { LogOut, Menu, MapPin, Package, User } from "lucide-react";
+import { LogOut, Menu, MapPin, Package, User, TentTree } from "lucide-react";
 import { toast } from "sonner";
 import ProfilModal from "./ProfilModal";
+
 import axios from "axios";
 
 export default function Sidebar({ children }) {
@@ -91,6 +92,24 @@ export default function Sidebar({ children }) {
         {/* Scrollable Menu */}
         <ScrollArea className="flex-1 px-4 py-6">
           <nav className="space-y-2">
+            <Link
+              to="/admin/desa-wisata"
+              className={`flex items-center gap-3 px-3 py-2 rounded-lg font-medium transition
+                ${
+                  isActive("/admin/desa-wisata")
+                    ? "bg-red-50 text-red-600 font-semibold"
+                    : "text-gray-700 hover:bg-gray-100"
+                }`}
+            >
+              <TentTree
+                className={`h-5 w-5 ${
+                  isActive("/admin/desa-wisata")
+                    ? "text-red-600"
+                    : "text-red-500"
+                }`}
+              />
+              Desa Wisata
+            </Link>
             <Link
               to="/admin/atraksi"
               className={`flex items-center gap-3 px-3 py-2 rounded-lg font-medium transition
@@ -186,6 +205,24 @@ export default function Sidebar({ children }) {
 
               <ScrollArea className="flex-1 px-4 py-6">
                 <nav className="space-y-3">
+                  <Link
+                    to="/admin/desa-wisata"
+                    className={`flex items-center gap-3 px-3 py-2 rounded-lg font-medium transition
+                ${
+                  isActive("/admin/desa-wisata")
+                    ? "bg-red-50 text-red-600 font-semibold"
+                    : "text-gray-700 hover:bg-gray-100"
+                }`}
+                  >
+                    <TentTree
+                      className={`h-5 w-5 ${
+                        isActive("/admin/desa-wisata")
+                          ? "text-red-600"
+                          : "text-red-500"
+                      }`}
+                    />
+                    Desa Wisata
+                  </Link>
                   <Link
                     to="/admin/atraksi"
                     onClick={() => setOpen(false)}

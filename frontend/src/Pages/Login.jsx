@@ -38,7 +38,7 @@ const Login = () => {
         localStorage.setItem("admin", JSON.stringify(admin));
 
         toast.success("Login Berhasil");
-        navigate("/admin/atraksi");
+        navigate("/admin/desa-wisata");
       }
     } catch (err) {
       console.error("❌ Login gagal:", err);
