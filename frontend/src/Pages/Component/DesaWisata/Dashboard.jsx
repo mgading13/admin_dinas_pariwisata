@@ -57,12 +57,13 @@ function Dashboard() {
     try {
       const res = await axios.get("http://localhost:3000/api/desaWisata/");
       console.log("📦 Data dari backend:", res.data);
+      
       setData(res.data.data || res.data);
     } catch (err) {
       console.error("Gagal fetch data desa wisata:", err);
     }
   };
-  useEffect(() => {
+  useEffect(() => { 
     fetchData();
   }, []);
 

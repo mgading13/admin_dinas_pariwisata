@@ -4,6 +4,7 @@ import Register from "./Pages/Register";
 import DashboardAtraksi from "../src/Pages/Component/Atraksi/Dashboard";
 import DashboardDesaWisata from "../src/Pages/Component/DesaWisata/Dashboard";
 import DashboardPaketWisata from "../src/Pages/Component/PaketWisata/Dashboard";
+import DashboardKuliner from "../src/Pages/Component/Kuliner/Dashboard";
 import ProtectedRoute from "./Pages/Component/ProtectedRoute";
 
 function App() {
@@ -34,6 +35,14 @@ function App() {
           element={
             <ProtectedRoute>
               <DashboardPaketWisata />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/kuliner"
+          element={
+            <ProtectedRoute>
+              <DashboardKuliner />
             </ProtectedRoute>
           }
         />

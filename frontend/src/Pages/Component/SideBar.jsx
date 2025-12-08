@@ -12,7 +12,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { LogOut, Menu, MapPin, Package, User, TentTree } from "lucide-react";
+import { LogOut, Menu, MapPin, Package, User, TentTree, HandPlatter } from "lucide-react";
 import { toast } from "sonner";
 import ProfilModal from "./ProfilModal";
 
@@ -143,6 +143,24 @@ export default function Sidebar({ children }) {
                 }`}
               />
               Paket Wisata
+            </Link>
+            <Link
+              to="/admin/kuliner"
+              className={`flex items-center gap-3 px-3 py-2 rounded-lg font-medium transition
+                ${
+                  isActive("/admin/kuliner")
+                    ? "bg-yellow-50 text-yellow-600 font-semibold"
+                    : "text-gray-700 hover:bg-gray-100"
+                }`}
+            >
+              <HandPlatter
+                className={`h-5 w-5 ${
+                  isActive("/admin/kuliner")
+                    ? "text-yellow-600"
+                    : "text-yellow-500"
+                }`}
+              />
+              Kuliner
             </Link>
           </nav>
         </ScrollArea>
