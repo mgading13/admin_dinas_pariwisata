@@ -5,6 +5,7 @@ import DashboardAtraksi from "../src/Pages/Component/Atraksi/Dashboard";
 import DashboardDesaWisata from "../src/Pages/Component/DesaWisata/Dashboard";
 import DashboardPaketWisata from "../src/Pages/Component/PaketWisata/Dashboard";
 import DashboardKuliner from "../src/Pages/Component/Kuliner/Dashboard";
+import DashboardRumahMakan from "../src/Pages/Component/RumahMakan/Dashboard";
 import ProtectedRoute from "./Pages/Component/ProtectedRoute";
 
 function App() {
@@ -43,6 +44,14 @@ function App() {
           element={
             <ProtectedRoute>
               <DashboardKuliner />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/rumah-makan"
+          element={
+            <ProtectedRoute>
+              <DashboardRumahMakan />
             </ProtectedRoute>
           }
         />

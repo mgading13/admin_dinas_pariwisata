@@ -58,7 +58,10 @@ const AddDataModal = ({ open, onClose, initialData, refreshData }) => {
 
       const res = await axios.post(
         "http://localhost:3000/api/kuliner/insert",
-        formData
+        formData,
+        {
+          headers: { "Content-Type": "multipart/form-data" },
+        }
       );
 
       toast.success("Data kuliner berhasil ditambahkan!");

@@ -56,12 +56,12 @@ function Dashboard() {
 
   const fetchData = async () => {
     try {
-      const res = await axios.get("http://localhost:3000/api/kuliner/");
+      const res = await axios.get("http://localhost:3000/api/rumahMakan/");
       console.log("📦 Data dari backend:", res.data);
       const result = Array.isArray(res.data) ? res.data : [res.data];
       setData(result);
     } catch (err) {
-      console.error("Gagal fetch data kuliner:", err);
+      console.error("Gagal fetch data rumah makan:", err);
     }
   };
   useEffect(() => {
@@ -70,23 +70,24 @@ function Dashboard() {
 
   const handleOpenDetail = async (id) => {
     try {
-      const res = await axios.get(`http://localhost:3000/api/kuliner/${id}`);
-      console.log("Detail kuliner:", res.data);
+      const res = await axios.get(`http://localhost:3000/api/rumahMakan/${id}`);
+      console.log("Detail rumah makan:", res.data);
       setSelectedData(res.data);
-      
+
       setOpenDetailModal(true);
     } catch (error) {
-      console.error("Gagal ambil detail kuliner:", error);
+      console.error("Gagal ambil rumah makan:", error);
     }
   };
 
   // 🧮 Filter dan pencarian
   const filteredData = useMemo(() => {
     return data.filter((item) => {
-      const matchSearch =
-        item.nama_makanan?.toLowerCase().includes(search.toLowerCase())
+      const matchSearch = item.lokasi
+        ?.toLowerCase()
+        .includes(search.toLowerCase());
       const matchFilter =
-        filterLokasi === "all" || item.nama_makanan === filterLokasi;
+        filterLokasi === "all" || item.lokasi === filterLokasi;
       return matchSearch && matchFilter;
     });
   }, [data, search, filterLokasi]);
@@ -107,7 +108,7 @@ function Dashboard() {
 
   const handleDelete = async (id) => {
     try {
-      await axios.delete(`http://localhost:3000/api/kuliner/${id}`);
+      await axios.delete(`http://localhost:3000/api/rumahMakan/${id}`);
       toast.success("Data berhasil dihapus.");
       setData((prev) => prev.filter((d) => d.id !== id));
     } catch (err) {
@@ -121,7 +122,7 @@ function Dashboard() {
       <div className="p-8 bg-gray-50 min-h-screen">
         {/* Header */}
         <div className="flex justify-between items-center pt-10 mb-6">
-          <h1 className="text-2xl font-bold">Daftar Kuliner</h1>
+          <h1 className="text-2xl font-bold">Daftar Rumah Makan</h1>
           <Button onClick={() => setOpenAddModal(true)}>Tambah Data</Button>
         </div>
 
@@ -137,7 +138,7 @@ function Dashboard() {
             className="w-full md:w-1/3"
           />
 
-          {/* <Select
+          <Select
             value={filterLokasi}
             onValueChange={(val) => {
               setFilterLokasi(val);
@@ -149,13 +150,13 @@ function Dashboard() {
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">Semua Lokasi</SelectItem>
-              {[...new Set(data.map((d) => d.nama_makanan))].map((nama_makanan, index) => (
-                <SelectItem key={nama_makanan || index} value={nama_makanan || "unknown"}>
-                  {nama_makanan || "Tidak diketahui"}
+              {[...new Set(data.map((d) => d.lokasi))].map((lokasi, index) => (
+                <SelectItem key={lokasi || index} value={lokasi || "unknown"}>
+                  {lokasi || "Tidak diketahui"}
                 </SelectItem>
               ))}
             </SelectContent>
-          </Select> */}
+          </Select>
         </div>
 
         {/* 📊 Tabel Data */}
@@ -164,8 +165,8 @@ function Dashboard() {
             <TableHeader>
               <TableRow>
                 <TableHead>No</TableHead>
-                <TableHead>Nama Makanan</TableHead>
-                <TableHead>Deskripsi</TableHead>
+                <TableHead>Nama Rumah Makan</TableHead>
+                <TableHead>Lokasi</TableHead>
                 <TableHead>Foto</TableHead>
                 <TableHead className="text-center">Aksi</TableHead>
               </TableRow>
@@ -187,15 +188,13 @@ function Dashboard() {
                     <TableCell>
                       {(currentPage - 1) * itemsPerPage + index + 1}
                     </TableCell>
-                    <TableCell>{item.nama_makanan}</TableCell>
-                    <TableCell className="whitespace-normal break-words max-w-[300px] text-justify">
-                      {item.deskripsi}
-                    </TableCell>
+                    <TableCell>{item.resto}</TableCell>
+                    <TableCell>{item.lokasi}</TableCell>
 
                     <TableCell>
                       <img
                         src={`http://localhost:3000${item.foto}`}
-                        alt={item.nama_makanan}
+                        alt={item.resto}
                         className="w-16 h-16 object-cover rounded-lg border"
                       />
                     </TableCell>
@@ -237,7 +236,7 @@ function Dashboard() {
                             </AlertDialogTitle>
                             <AlertDialogDescription>
                               Yakin ingin menghapus{" "}
-                              <strong>{item.nama_makanan}</strong>?
+                              <strong>{item.resto}</strong>?
                             </AlertDialogDescription>
                           </AlertDialogHeader>
                           <AlertDialogFooter>
@@ -310,22 +309,34 @@ function Dashboard() {
         <Dialog open={openDetailModal} onOpenChange={setOpenDetailModal}>
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>Detail Paket Wisata</DialogTitle>
+              <DialogTitle>Detail Rumah Makan</DialogTitle>
             </DialogHeader>
 
             {selectedData && (
               <div className="space-y-2 mt-3 gap-2 flex flex-col text-md">
                 <div className="flex flex-col gap-1">
-                  <Label className="font-bold">Nama Makanan :</Label>
-                  <p>{selectedData.nama_makanan}</p>
+                  <Label className="font-bold">Nama Rumah Makan :</Label>
+                  <p>{selectedData.resto}</p>
                 </div>
                 <div className="flex flex-col gap-1">
-                  <Label className="font-bold">Deskripsi :</Label>
-                  <p className="text-justify">{selectedData.deskripsi}</p>
+                  <Label className="font-bold">Lokasi :</Label>
+                  <p className="text-justify">{selectedData.lokasi}</p>
                 </div>
+                <div className="flex flex-col gap-1">
+                  <Label className="font-bold">Link Google Maps :</Label>
+                  <a
+                    href={selectedData.link_gmaps}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-blue-600 underline hover:text-blue-800"
+                  >
+                    {selectedData.link_gmaps}
+                  </a>
+                </div>
+
                 <img
                   src={`http://localhost:3000${selectedData.foto}`}
-                  alt={selectedData.nama_makanan}
+                  alt={selectedData.resto}
                   className="w-full h-100 object-cover rounded-lg mt-2"
                 />
               </div>
