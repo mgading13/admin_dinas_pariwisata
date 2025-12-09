@@ -21,6 +21,7 @@ import {
   TentTree,
   HandPlatter,
   Utensils,
+  Hotel
 } from "lucide-react";
 import { toast } from "sonner";
 import ProfilModal from "./ProfilModal";
@@ -188,6 +189,24 @@ export default function Sidebar({ children }) {
                 }`}
               />
               Rumah Makan
+            </Link>
+            <Link
+              to="/admin/hotel"
+              className={`flex items-center gap-3 px-3 py-2 rounded-lg font-medium transition
+                ${
+                  isActive("/admin/hotel")
+                    ? "bg-lime-50 text-lime-600 font-semibold"
+                    : "text-gray-700 hover:bg-gray-100"
+                }`}
+            >
+              <Hotel
+                className={`h-5 w-5 ${
+                  isActive("/admin/hotel")
+                    ? "text-lime-600"
+                    : "text-lime-500"
+                }`}
+              />
+              Hotel
             </Link>
           </nav>
         </ScrollArea>
