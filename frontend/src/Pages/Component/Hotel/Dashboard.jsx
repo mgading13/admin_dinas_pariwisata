@@ -304,7 +304,11 @@ function Dashboard() {
         <Dialog open={openDetailModal} onOpenChange={setOpenDetailModal}>
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>Detail Rumah Makan</DialogTitle>
+              {selectedData && (
+                <DialogTitle>
+                  Detail Hotel {selectedData.nama_hotel}
+                </DialogTitle>
+              )}
             </DialogHeader>
 
             {selectedData && (
@@ -318,24 +322,17 @@ function Dashboard() {
                     <Label className="font-bold">Lokasi :</Label>
                     <p>{selectedData.lokasi}</p>
                   </div>
-                  <div className="flex flex-col">
-                    <Label className="font-bold">Alamat :</Label>
-                    <p className="text-justify">{selectedData.alamat}</p>
-                  </div>
-                  <div className="flex flex-col">
-                    <Label className="font-bold">Deskripsi :</Label>
-                    <p>{selectedData.deskripsi}</p>
-                  </div>
+
                   <div className="flex flex-col">
                     <Label className="font-bold">Jumlah Kamar :</Label>
                     <p>{selectedData.jumlah_kamar}</p>
                   </div>
+                <div className="flex flex-col">
+                  <Label className="font-bold">Jumlah Tempat Tidur :</Label>
+                  <p>{selectedData.jumlah_tempatTidur}</p>
+                </div>
                 </div>
                 <div className="flex flex-col gap-3">
-                  <div className="flex flex-col">
-                    <Label className="font-bold">Jumlah Tempat Tidur :</Label>
-                    <p>{selectedData.jumlah_tempatTidur}</p>
-                  </div>
                   <div className="flex flex-col">
                     <Label className="font-bold">Harga per Malam</Label>
                     <p>

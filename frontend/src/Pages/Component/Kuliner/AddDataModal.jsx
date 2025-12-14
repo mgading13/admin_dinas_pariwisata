@@ -18,6 +18,7 @@ const AddDataModal = ({ open, onClose, initialData, refreshData }) => {
 
   const [form, setForm] = useState({
     nama_makanan: "",
+    lokasi: "",
     deskripsi: "",
     foto: "",
   });
@@ -26,12 +27,14 @@ const AddDataModal = ({ open, onClose, initialData, refreshData }) => {
     if (initialData) {
       setForm({
         nama_makanan: initialData.nama_makanan || "",
+        lokasi: initialData.lokasi || "",
         deskripsi: initialData.deskripsi || "",
         foto: initialData.foto || "",
       });
     } else {
       setForm({
         nama_makanan: "",
+        lokasi: "",
         deskripsi: "",
         foto: "",
       });
@@ -53,6 +56,7 @@ const AddDataModal = ({ open, onClose, initialData, refreshData }) => {
     try {
       const formData = new FormData();
       formData.append("nama_makanan", form.nama_makanan);
+      formData.append("lokasi", form.lokasi);
       formData.append("deskripsi", form.deskripsi);
       formData.append("foto", form.foto);
 
@@ -94,6 +98,16 @@ const AddDataModal = ({ open, onClose, initialData, refreshData }) => {
               value={form.nama_makanan}
               onChange={handleChange}
               placeholder="Masukkan nama makanan"
+              required
+            />
+          </div>
+          <div className="flex flex-col gap-2">
+            <Label>Daerah</Label>
+            <Input
+              name="lokasi"
+              value={form.lokasi}
+              onChange={handleChange}
+              placeholder="Masukkan daerah makanan"
               required
             />
           </div>

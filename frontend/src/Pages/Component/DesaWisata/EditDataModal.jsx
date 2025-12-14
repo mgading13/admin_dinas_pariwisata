@@ -28,9 +28,6 @@ const EditDataModal = ({ open, onClose, initialData, refreshData }) => {
     longitude: "",
     latitude: "",
     jenisDesa: "",
-    jalur_darat: "",
-    jalur_laut: "",
-    jalur_udara: "",
   });
 
   useEffect(() => {
@@ -43,9 +40,6 @@ const EditDataModal = ({ open, onClose, initialData, refreshData }) => {
         longitude: initialData.longitude || "",
         latitude: initialData.latitude || "",
         jenisDesa: initialData.jenisDesa || "",
-        jalur_darat: initialData.jalur_darat || "",
-        jalur_laut: initialData.jalur_laut || "",
-        jalur_udara: initialData.jalur_udara || "",
       });
     } else {
       setForm({
@@ -56,9 +50,6 @@ const EditDataModal = ({ open, onClose, initialData, refreshData }) => {
         longitude: "",
         latitude: "",
         jenisDesa: "",
-        jalur_darat: "",
-        jalur_laut: "",
-        jalur_udara: "",
       });
     }
   }, [initialData, open]);
@@ -86,9 +77,6 @@ const EditDataModal = ({ open, onClose, initialData, refreshData }) => {
       formData.append("longitude", form.longitude);
       formData.append("latitude", form.latitude);
       formData.append("jenisDesa", form.jenisDesa);
-      formData.append("jalur_darat", form.jalur_darat);
-      formData.append("jalur_laut", form.jalur_laut);
-      formData.append("jalur_udara", form.jalur_udara);
 
       const res = await axios.patch(
         `http://localhost:3000/api/desaWisata/${initialData.id}`,
@@ -184,33 +172,7 @@ const EditDataModal = ({ open, onClose, initialData, refreshData }) => {
                 </SelectContent>
               </Select>
             </div>
-            <div className="flex flex-col gap-2">
-              <Label>Jalur Via Darat</Label>
-              <Input
-                name="jalur_darat"
-                value={form.jalur_darat}
-                onChange={handleChange}
-                placeholder="Masukkan jalur via darat menuju desa"
-              />
-            </div>
-            <div className="flex flex-col gap-2">
-              <Label>Jalur Via Laut</Label>
-              <Input
-                name="jalur_laut"
-                value={form.jalur_laut}
-                onChange={handleChange}
-                placeholder="Masukkan jalur via laut menuju desa"
-              />
-            </div>
-            <div className="flex flex-col gap-2">
-              <Label>Jalur Via Udara</Label>
-              <Input
-                name="jalur_udara"
-                value={form.jalur_udara}
-                onChange={handleChange}
-                placeholder="Masukkan jalur via darat menuju desa"
-              />
-            </div>
+
             <div className="flex flex-col gap-2">
               <Label>Foto</Label>
               <Input

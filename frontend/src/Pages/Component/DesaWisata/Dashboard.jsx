@@ -57,13 +57,13 @@ function Dashboard() {
     try {
       const res = await axios.get("http://localhost:3000/api/desaWisata/");
       console.log("📦 Data dari backend:", res.data);
-      
+
       setData(res.data.data || res.data);
     } catch (err) {
       console.error("Gagal fetch data desa wisata:", err);
     }
   };
-  useEffect(() => { 
+  useEffect(() => {
     fetchData();
   }, []);
 
@@ -195,7 +195,7 @@ function Dashboard() {
 
                       <TableCell>{item.namaDesa}</TableCell>
 
-                      <TableCell className="whitespace-normal break-words max-w-[300px] text-justify">
+                      <TableCell className="max-w-[300px] max-h-[100px] overflow-y-auto whitespace-normal break-words">
                         {item.deskripsi}
                       </TableCell>
 
@@ -342,23 +342,9 @@ function Dashboard() {
                       <Label className="font-bold">Longitude :</Label>
                       <p>{selectedData.longitude}</p>
                     </div>
-                  </div>
-                  <div className="flex flex-col gap-3">
                     <div className="flex flex-col">
                       <Label className="font-bold">Latitude :</Label>
                       <p>{selectedData.longitude}</p>
-                    </div>
-                    <div className="flex flex-col">
-                      <Label className="font-bold">Jalur Via Darat :</Label>
-                      <p>{selectedData.jalur_darat}</p>
-                    </div>
-                    <div className="flex flex-col ">
-                      <Label className="font-bold">Jalur Via Laut :</Label>
-                      <p>{selectedData.jalur_laut}</p>
-                    </div>
-                    <div className="flex flex-col">
-                      <Label className="font-bold">Jalur Via Udara :</Label>
-                      <p>{selectedData.jalur_udara}</p>
                     </div>
                   </div>
                 </div>

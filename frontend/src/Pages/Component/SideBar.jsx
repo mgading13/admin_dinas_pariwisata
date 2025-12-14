@@ -21,7 +21,8 @@ import {
   TentTree,
   HandPlatter,
   Utensils,
-  Hotel
+  Hotel,
+  Navigation,
 } from "lucide-react";
 import { toast } from "sonner";
 import ProfilModal from "./ProfilModal";
@@ -121,6 +122,24 @@ export default function Sidebar({ children }) {
               Desa Wisata
             </Link>
             <Link
+              to="/admin/jarak-desa"
+              className={`flex items-center gap-3 px-3 py-2 rounded-lg font-medium transition
+                ${
+                  isActive("/admin/jarak-desa")
+                    ? "bg-sky-50 text-sky-600 font-semibold"
+                    : "text-gray-700 hover:bg-gray-100"
+                }`}
+            >
+              <Navigation
+                className={`h-5 w-5 ${
+                  isActive("/admin/jarak-desa")
+                    ? "text-sky-600"
+                    : "text-sky-500"
+                }`}
+              />
+              Jarak Desa
+            </Link>
+            <Link
               to="/admin/atraksi"
               className={`flex items-center gap-3 px-3 py-2 rounded-lg font-medium transition
                 ${
@@ -201,9 +220,7 @@ export default function Sidebar({ children }) {
             >
               <Hotel
                 className={`h-5 w-5 ${
-                  isActive("/admin/hotel")
-                    ? "text-lime-600"
-                    : "text-lime-500"
+                  isActive("/admin/hotel") ? "text-lime-600" : "text-lime-500"
                 }`}
               />
               Hotel
@@ -286,6 +303,24 @@ export default function Sidebar({ children }) {
                       }`}
                     />
                     Desa Wisata
+                  </Link>
+                  <Link
+                    to="/admin/jarak-desa"
+                    className={`flex items-center gap-3 px-3 py-2 rounded-lg font-medium transition
+                ${
+                  isActive("/admin/jarak-desa")
+                    ? "bg-sky-50 text-sky-600 font-semibold"
+                    : "text-gray-700 hover:bg-gray-100"
+                }`}
+                  >
+                    <Navigation
+                      className={`h-5 w-5 ${
+                        isActive("/admin/jarak-desa")
+                          ? "text-sky-600"
+                          : "text-sky-500"
+                      }`}
+                    />
+                    Jarak Desa
                   </Link>
                   <Link
                     to="/admin/atraksi"

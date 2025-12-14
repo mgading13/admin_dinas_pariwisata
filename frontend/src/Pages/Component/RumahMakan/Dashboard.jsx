@@ -47,7 +47,6 @@ function Dashboard() {
   const [openDetailModal, setOpenDetailModal] = useState(false);
   const [selectedData, setSelectedData] = useState(null);
   const [search, setSearch] = useState("");
-  const [filterLokasi, setFilterLokasi] = useState("all");
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 5;
 
@@ -83,14 +82,9 @@ function Dashboard() {
   // 🧮 Filter dan pencarian
   const filteredData = useMemo(() => {
     return data.filter((item) => {
-      const matchSearch = item.lokasi
-        ?.toLowerCase()
-        .includes(search.toLowerCase());
-      const matchFilter =
-        filterLokasi === "all" || item.lokasi === filterLokasi;
-      return matchSearch && matchFilter;
+      return item.resto?.toLowerCase().includes(search.toLowerCase());
     });
-  }, [data, search, filterLokasi]);
+  }, [data, search]);
 
   // 📄 Pagination
   const totalPages = Math.ceil(filteredData.length / itemsPerPage);
@@ -138,7 +132,7 @@ function Dashboard() {
             className="w-full md:w-1/3"
           />
 
-          <Select
+          {/* <Select
             value={filterLokasi}
             onValueChange={(val) => {
               setFilterLokasi(val);
@@ -156,7 +150,7 @@ function Dashboard() {
                 </SelectItem>
               ))}
             </SelectContent>
-          </Select>
+          </Select> */}
         </div>
 
         {/* 📊 Tabel Data */}
@@ -166,8 +160,7 @@ function Dashboard() {
               <TableRow>
                 <TableHead>No</TableHead>
                 <TableHead>Nama Rumah Makan</TableHead>
-                <TableHead>Lokasi</TableHead>
-                <TableHead>Foto</TableHead>
+                <TableHead>Link Google Maps</TableHead>
                 <TableHead className="text-center">Aksi</TableHead>
               </TableRow>
             </TableHeader>
@@ -189,14 +182,15 @@ function Dashboard() {
                       {(currentPage - 1) * itemsPerPage + index + 1}
                     </TableCell>
                     <TableCell>{item.resto}</TableCell>
-                    <TableCell>{item.lokasi}</TableCell>
-
                     <TableCell>
-                      <img
-                        src={`http://localhost:3000${item.foto}`}
-                        alt={item.resto}
-                        className="w-16 h-16 object-cover rounded-lg border"
-                      />
+                      <a
+                        href={item.link_gmaps}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-blue-600 underline hover:text-blue-800"
+                      >
+                        {item.link_gmaps}
+                      </a>
                     </TableCell>
 
                     <TableCell className="flex justify-center gap-2">
@@ -308,9 +302,13 @@ function Dashboard() {
         {/* 👁️ Modal Detail */}
         <Dialog open={openDetailModal} onOpenChange={setOpenDetailModal}>
           <DialogContent>
-            <DialogHeader>
-              <DialogTitle>Detail Rumah Makan</DialogTitle>
-            </DialogHeader>
+            {selectedData && (
+              <DialogHeader>
+                <DialogTitle>
+                  Detail Rumah Makan {selectedData.resto}
+                </DialogTitle>
+              </DialogHeader>
+            )}
 
             {selectedData && (
               <div className="space-y-2 mt-3 gap-2 flex flex-col text-md">
@@ -318,10 +316,7 @@ function Dashboard() {
                   <Label className="font-bold">Nama Rumah Makan :</Label>
                   <p>{selectedData.resto}</p>
                 </div>
-                <div className="flex flex-col gap-1">
-                  <Label className="font-bold">Lokasi :</Label>
-                  <p className="text-justify">{selectedData.lokasi}</p>
-                </div>
+
                 <div className="flex flex-col gap-1">
                   <Label className="font-bold">Link Google Maps :</Label>
                   <a
@@ -333,12 +328,6 @@ function Dashboard() {
                     {selectedData.link_gmaps}
                   </a>
                 </div>
-
-                <img
-                  src={`http://localhost:3000${selectedData.foto}`}
-                  alt={selectedData.resto}
-                  className="w-full h-100 object-cover rounded-lg mt-2"
-                />
               </div>
             )}
           </DialogContent>

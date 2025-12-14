@@ -17,10 +17,8 @@ const AddDataModal = ({ open, onClose, initialData, refreshData }) => {
 
   const [form, setForm] = useState({
     resto: "",
-    lokasi: "",
     link_gmaps: "",
     kulinerId: "",
-    foto: "",
   });
 
   // Ambil data kuliner untuk dropdown
@@ -41,18 +39,14 @@ const AddDataModal = ({ open, onClose, initialData, refreshData }) => {
     if (initialData) {
       setForm({
         resto: initialData.resto || "",
-        lokasi: initialData.lokasi || "",
         link_gmaps: initialData.link_gmaps || "",
         kulinerId: initialData.kulinerId || "",
-        foto: initialData.foto || "",
       });
     } else {
       setForm({
         resto: "",
-        lokasi: "",
         link_gmaps: "",
         kulinerId: "",
-        foto: "",
       });
     }
   }, [initialData, open]);
@@ -62,30 +56,24 @@ const AddDataModal = ({ open, onClose, initialData, refreshData }) => {
     setForm({ ...form, [name]: value });
   };
 
-  const handlePhoto = (e) => {
-    const file = e.target.files[0];
-    setForm({ ...form, foto: file });
-  };
-
   const handleSubmit = async (e) => {
     e.preventDefault();
 
     try {
       const formData = new FormData();
       formData.append("resto", form.resto);
-      formData.append("lokasi", form.lokasi);
       formData.append("link_gmaps", form.link_gmaps);
       formData.append("kulinerId", form.kulinerId);
-      formData.append("foto", form.foto);
 
-      const res = await axios.post("http://localhost:3000/api/rumahMakan/insert",
-        formData, 
+      const res = await axios.post(
+        "http://localhost:3000/api/rumahMakan/insert",
+        formData,
         {
-            headers: { "Content-Type": "multipart/form-data" },
+          headers: { "Content-Type": "multipart/form-data" },
         }
       );
       toast.success("Data rumah makan berhasil ditambahkan!");
-      console.log("Add success:", res.data);   
+      console.log("Add success:", res.data);
       refreshData?.();
       onClose();
     } catch (error) {
@@ -135,18 +123,6 @@ const AddDataModal = ({ open, onClose, initialData, refreshData }) => {
             </select>
           </div>
 
-          {/* Lokasi */}
-          <div className="flex flex-col gap-2">
-            <Label>Lokasi</Label>
-            <Input
-              name="lokasi"
-              value={form.lokasi}
-              onChange={handleChange}
-              placeholder="Masukkan lokasi restoran"
-              required
-            />
-          </div>
-
           {/* Link Gmaps */}
           <div className="flex flex-col gap-2">
             <Label>Link Google Maps</Label>
@@ -156,26 +132,6 @@ const AddDataModal = ({ open, onClose, initialData, refreshData }) => {
               onChange={handleChange}
               placeholder="Tempelkan link Google Maps..."
             />
-          </div>
-
-          {/* Foto */}
-          <div className="flex flex-col gap-2">
-            <Label>Foto</Label>
-            <Input
-              name="foto"
-              type="file"
-              accept="image/*"
-              onChange={handlePhoto}
-              required={!initialData}
-            />
-
-            {form.foto && typeof form.foto === "string" && (
-              <img
-                src={`http://localhost:3000${form.foto}`}
-                alt={form.resto}
-                className="mt-2 w-24 h-24 object-cover rounded-md border"
-              />
-            )}
           </div>
 
           {/* Tombol */}

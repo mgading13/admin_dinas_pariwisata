@@ -323,9 +323,12 @@ function Dashboard() {
           {/* 👁️ Modal Detail Data */}
           <Dialog open={openDetailModal} onOpenChange={setOpenDetailModal}>
             <DialogContent>
+              {selectedData && (
               <DialogHeader>
-                <DialogTitle>Detail Atraksi</DialogTitle>
+                <DialogTitle>Detail Atraksi {selectedData.nameEvent}</DialogTitle>
               </DialogHeader>
+
+              )}
               {selectedData && (
                 <div className="space-y-2 mt-3 gap-2 flex flex-col text-md">
                   <div className="flex flex-col gap-1">
@@ -334,7 +337,7 @@ function Dashboard() {
                   </div>
                   <div className="flex flex-col gap-1">
                     <Label className="font-bold">Deskripsi :</Label>
-                    <p className="text-justify">{selectedData.description}</p>
+                    <p className="max-w-[300px] max-h-[100px] overflow-y-auto whitespace-normal break-words">{selectedData.description}</p>
                   </div>
                   <div className="flex flex-col gap-1">
                     <Label className="font-bold">Lokasi :</Label>

@@ -23,8 +23,6 @@ const AddDataModal = ({ open, onClose, initialData, refreshData }) => {
   const [form, setForm] = useState({
     nama_hotel: "",
     lokasi: "",
-    alamat: "",
-    deskripsi: "",
     jumlah_kamar: "",
     jumlah_tempatTidur: "",
     harga: "",
@@ -39,8 +37,6 @@ const AddDataModal = ({ open, onClose, initialData, refreshData }) => {
       setForm({
         nama_hotel: initialData.nama_hotel || "",
         lokasi: initialData.lokasi || "",
-        alamat: initialData.alamat || "",
-        deskripsi: initialData.deskripsi || "",
         jumlah_kamar: initialData.jumlah_kamar || "",
         jumlah_tempatTidur: initialData.jumlah_tempatTidur || "",
         harga: initialData.harga || "",
@@ -53,8 +49,6 @@ const AddDataModal = ({ open, onClose, initialData, refreshData }) => {
       setForm({
         nama_hotel: "",
         lokasi: "",
-        alamat: "",
-        deskripsi: "",
         jumlah_kamar: "",
         jumlah_tempatTidur: "",
         harga: "",
@@ -96,8 +90,6 @@ const AddDataModal = ({ open, onClose, initialData, refreshData }) => {
 
       formData.append("nama_hotel", form.nama_hotel);
       formData.append("lokasi", form.lokasi);
-      formData.append("alamat", form.alamat);
-      formData.append("deskripsi", form.deskripsi);
       formData.append("jumlah_kamar", form.jumlah_kamar);
       formData.append("jumlah_tempatTidur", form.jumlah_tempatTidur);
       formData.append("harga", form.harga);
@@ -153,28 +145,6 @@ const AddDataModal = ({ open, onClose, initialData, refreshData }) => {
                 value={form.lokasi}
                 onChange={handleChange}
                 placeholder="Masukkan lokasi hotel"
-                required
-              />
-            </div>
-
-            <div className="flex flex-col gap-2">
-              <Label>Alamat</Label>
-              <Input
-                name="alamat"
-                value={form.alamat}
-                onChange={handleChange}
-                placeholder="Masukkan alamat lengkap hotel"
-                required
-              />
-            </div>
-
-            <div className="flex flex-col gap-2">
-              <Label>Deskripsi</Label>
-              <Textarea
-                name="deskripsi"
-                value={form.deskripsi}
-                onChange={handleChange}
-                placeholder="Tulis deskripsi hotel..."
                 required
               />
             </div>

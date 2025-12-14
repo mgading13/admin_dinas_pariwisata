@@ -47,7 +47,7 @@ function Dashboard() {
   const [openDetailModal, setOpenDetailModal] = useState(false);
   const [selectedData, setSelectedData] = useState(null);
   const [search, setSearch] = useState("");
-  const [filterLokasi, setFilterLokasi] = useState("all");
+  const [filterDesa, setFilterDesa] = useState("all");
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 5;
 
@@ -56,12 +56,12 @@ function Dashboard() {
 
   const fetchData = async () => {
     try {
-      const res = await axios.get("http://localhost:3000/api/kuliner/");
+      const res = await axios.get("http://localhost:3000/api/jarak/");
       console.log("📦 Data dari backend:", res.data);
       const result = Array.isArray(res.data) ? res.data : [res.data];
       setData(result);
     } catch (err) {
-      console.error("Gagal fetch data kuliner:", err);
+      console.error("Gagal fetch data jarak desa:", err);
     }
   };
   useEffect(() => {
@@ -70,27 +70,26 @@ function Dashboard() {
 
   const handleOpenDetail = async (id) => {
     try {
-      const res = await axios.get(`http://localhost:3000/api/kuliner/${id}`);
-      console.log("Detail kuliner:", res.data);
+      const res = await axios.get(`http://localhost:3000/api/jarak/${id}`);
+      console.log("Detail jarak desa:", res.data);
       setSelectedData(res.data);
 
       setOpenDetailModal(true);
     } catch (error) {
-      console.error("Gagal ambil detail kuliner:", error);
+      console.error("Gagal ambil jarak desa:", error);
     }
   };
 
   // 🧮 Filter dan pencarian
   const filteredData = useMemo(() => {
     return data.filter((item) => {
-      const matchSearch = item.nama_makanan
+      const matchSearch = item.titikKota
         ?.toLowerCase()
         .includes(search.toLowerCase());
-      const matchFilter =
-        filterLokasi === "all" || item.nama_makanan === filterLokasi;
+      const matchFilter = filterDesa === "all" || item.namaDesa === filterDesa;
       return matchSearch && matchFilter;
     });
-  }, [data, search, filterLokasi]);
+  }, [data, search, filterDesa]);
 
   // 📄 Pagination
   const totalPages = Math.ceil(filteredData.length / itemsPerPage);
@@ -108,7 +107,7 @@ function Dashboard() {
 
   const handleDelete = async (id) => {
     try {
-      await axios.delete(`http://localhost:3000/api/kuliner/${id}`);
+      await axios.delete(`http://localhost:3000/api/rumahMakan/${id}`);
       toast.success("Data berhasil dihapus.");
       setData((prev) => prev.filter((d) => d.id !== id));
     } catch (err) {
@@ -122,14 +121,14 @@ function Dashboard() {
       <div className="p-8 bg-gray-50 min-h-screen">
         {/* Header */}
         <div className="flex justify-between items-center pt-10 mb-6">
-          <h1 className="text-2xl font-bold">Daftar Kuliner</h1>
+          <h1 className="text-2xl font-bold">Daftar Jalur Desa</h1>
           <Button onClick={() => setOpenAddModal(true)}>Tambah Data</Button>
         </div>
 
         {/* Search */}
         <div className="mb-5 flex justify-between items-center">
           <Input
-            placeholder="Cari berdasarkan nama makanan"
+            placeholder="Cari berdasarkan asal titik kota"
             value={search}
             onChange={(e) => {
               setSearch(e.target.value);
@@ -139,9 +138,9 @@ function Dashboard() {
           />
 
           <Select
-            value={filterLokasi}
+            value={filterDesa}
             onValueChange={(val) => {
-              setFilterLokasi(val);
+              setFilterDesa(val);
               setCurrentPage(1);
             }}
           >
@@ -149,10 +148,10 @@ function Dashboard() {
               <SelectValue placeholder="Filter Lokasi" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">Semua Daerah</SelectItem>
-              {[...new Set(data.map((d) => d.lokasi))].map((lokasi, index) => (
-                <SelectItem key={lokasi || index} value={lokasi || "unknown"}>
-                  {lokasi || "Tidak diketahui"}
+              <SelectItem value="all">Semua Desa</SelectItem>
+              {[...new Set(data.map((d) => d.namaDesa))].map((desa, index) => (
+                <SelectItem key={desa || index} value={desa || "unknown"}>
+                  {desa || "Tidak diketahui"}
                 </SelectItem>
               ))}
             </SelectContent>
@@ -165,10 +164,11 @@ function Dashboard() {
             <TableHeader>
               <TableRow>
                 <TableHead>No</TableHead>
-                <TableHead>Nama Makanan</TableHead>
-                <TableHead>Daerah</TableHead>
-                <TableHead>Deskripsi</TableHead>
-                <TableHead>Foto</TableHead>
+                <TableHead>Nama Desa</TableHead>
+                <TableHead>Titik</TableHead>
+                <TableHead>Jalur Darat</TableHead>
+                <TableHead>Jalur Laut</TableHead>
+                <TableHead>Jalur Udara</TableHead>
                 <TableHead className="text-center">Aksi</TableHead>
               </TableRow>
             </TableHeader>
@@ -189,19 +189,11 @@ function Dashboard() {
                     <TableCell>
                       {(currentPage - 1) * itemsPerPage + index + 1}
                     </TableCell>
-                    <TableCell>{item.nama_makanan}</TableCell>
-                    <TableCell>{item.lokasi}</TableCell>
-                    <TableCell className="max-w-[300px] max-h-[100px] overflow-y-auto whitespace-normal break-words">
-                      {item.deskripsi}
-                    </TableCell>
-
-                    <TableCell>
-                      <img
-                        src={`http://localhost:3000${item.foto}`}
-                        alt={item.nama_makanan}
-                        className="w-16 h-16 object-cover rounded-lg border"
-                      />
-                    </TableCell>
+                    <TableCell>{item.namaDesa}</TableCell>
+                    <TableCell>{item.titikKota}</TableCell>
+                    <TableCell className="max-w-[300px] max-h-[100px] overflow-y-auto whitespace-normal break-words">{item.jalur_darat}</TableCell>
+                    <TableCell className="max-w-[300px] max-h-[100px] overflow-y-auto whitespace-normal break-words">{item.jalur_laut}</TableCell>
+                    <TableCell className="max-w-[300px] max-h-[100px] overflow-y-auto whitespace-normal break-words">{item.jalur_udara}</TableCell>
 
                     <TableCell className="flex justify-center gap-2">
                       <Button
@@ -239,8 +231,9 @@ function Dashboard() {
                               Konfirmasi Hapus
                             </AlertDialogTitle>
                             <AlertDialogDescription>
-                              Yakin ingin menghapus{" "}
-                              <strong>{item.nama_makanan}</strong>?
+                              Yakin ingin menghapus jalur menuju Desa {""}
+                              <strong>{item.namaDesa}</strong> Via{" "}
+                              <strong>{item.titikKota}</strong>?
                             </AlertDialogDescription>
                           </AlertDialogHeader>
                           <AlertDialogFooter>
@@ -314,29 +307,34 @@ function Dashboard() {
           <DialogContent>
             {selectedData && (
               <DialogHeader>
-                <DialogTitle>Detail Kuliner {selectedData.nama_makanan} </DialogTitle>
+                <DialogTitle>
+                  Detail Jalur Menuju Desa {selectedData.namaDesa}
+                </DialogTitle>
               </DialogHeader>
             )}
 
             {selectedData && (
               <div className="space-y-2 mt-3 gap-2 flex flex-col text-md">
                 <div className="flex flex-col gap-1">
-                  <Label className="font-bold">Nama Makanan :</Label>
-                  <p>{selectedData.nama_makanan}</p>
+                  <Label className="font-bold">Nama Desa :</Label>
+                  <p>{selectedData.namaDesa}</p>
                 </div>
                 <div className="flex flex-col gap-1">
-                  <Label className="font-bold">Daerah :</Label>
-                  <p>{selectedData.lokasi}</p>
+                  <Label className="font-bold"> Via Kota :</Label>
+                  <p>{selectedData.titikKota}</p>
                 </div>
                 <div className="flex flex-col gap-1">
-                  <Label className="font-bold">Deskripsi :</Label>
-                  <p className="text-justify">{selectedData.deskripsi}</p>
+                  <Label className="font-bold"> Jalur Darat :</Label>
+                  <p>{selectedData.jalur_darat}</p>
                 </div>
-                <img
-                  src={`http://localhost:3000${selectedData.foto}`}
-                  alt={selectedData.nama_makanan}
-                  className="w-full h-100 object-cover rounded-lg mt-2"
-                />
+                <div className="flex flex-col gap-1">
+                  <Label className="font-bold"> Jalur Laut :</Label>
+                  <p>{selectedData.jalur_laut}</p>
+                </div>
+                <div className="flex flex-col gap-1">
+                  <Label className="font-bold"> Jalur Udara :</Label>
+                  <p>{selectedData.jalur_udara}</p>
+                </div>
               </div>
             )}
           </DialogContent>

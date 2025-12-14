@@ -193,7 +193,7 @@ function Dashboard() {
                     </TableCell>
                     <TableCell>{item.nama_wisata}</TableCell>
                     <TableCell>{item.lokasi}</TableCell>
-                    <TableCell className="whitespace-normal break-words max-w-[300px] text-justify">
+                    <TableCell className="max-w-[300px] max-h-[100px] overflow-y-auto whitespace-normal break-words">
                       {item.deskripsi}
                     </TableCell>
                     <TableCell>
@@ -319,7 +319,9 @@ function Dashboard() {
         <Dialog open={openDetailModal} onOpenChange={setOpenDetailModal}>
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>Detail Paket Wisata</DialogTitle>
+              {selectedData && (
+                <DialogTitle>Detail Paket Wisata {selectedData.nama_wisata}</DialogTitle>
+              )}
             </DialogHeader>
 
             {selectedData && (
