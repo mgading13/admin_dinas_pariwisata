@@ -109,7 +109,7 @@ function Dashboard() {
   const handleDelete = async (id) => {
     try {
       await axios.delete(`http://localhost:3000/api/desaWisata/${id}`);
-      toast.error("Data berhasil dihapus.");
+      toast.success("Data berhasil dihapus.");
       setData((prev) => prev.filter((d) => d.id !== id));
     } catch (err) {
       toast.error("Gagal menghapus data.");

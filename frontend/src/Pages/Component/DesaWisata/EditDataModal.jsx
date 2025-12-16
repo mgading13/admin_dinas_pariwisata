@@ -133,21 +133,21 @@ const EditDataModal = ({ open, onClose, initialData, refreshData }) => {
               />
             </div>
             <div className="flex flex-col gap-2">
-              <Label>Longitude</Label>
-              <Input
-                name="longitude"
-                value={form.longitude}
-                onChange={handleChange}
-                placeholder="Masukkan koordinat longitude desa wisata"
-              />
-            </div>
-            <div className="flex flex-col gap-2">
               <Label>Latitude</Label>
               <Input
                 name="latitude"
                 value={form.latitude}
                 onChange={handleChange}
                 placeholder="Masukkan koordinat latitude desa wisata"
+              />
+            </div>
+            <div className="flex flex-col gap-2">
+              <Label>Longitude</Label>
+              <Input
+                name="longitude"
+                value={form.longitude}
+                onChange={handleChange}
+                placeholder="Masukkan koordinat longitude desa wisata"
               />
             </div>
 
@@ -194,7 +194,7 @@ const EditDataModal = ({ open, onClose, initialData, refreshData }) => {
               <Button type="button" variant="outline" onClick={onClose}>
                 Batal
               </Button>
-              <Button onClick={handleSubmit}>
+              <Button type="submit">
                 {initialData ? "Simpan Perubahan" : "Tambah Data"}
               </Button>
             </div>

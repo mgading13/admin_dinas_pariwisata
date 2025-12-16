@@ -21,6 +21,7 @@ import { toast } from "sonner";
 
 const AddDataModal = ({ open, onClose, initialData, refreshData }) => {
   const [desaList, setDesaList] = useState([]);
+  const [existingRoutes, setExistingRoutes] = useState([]);
 
   const [form, setForm] = useState({
     titikKota: "",
@@ -30,7 +31,6 @@ const AddDataModal = ({ open, onClose, initialData, refreshData }) => {
     desaId: "",
   });
 
-  // Ambil data kuliner untuk dropdown
   useEffect(() => {
     async function fetchDesa() {
       try {
@@ -42,6 +42,18 @@ const AddDataModal = ({ open, onClose, initialData, refreshData }) => {
     }
     fetchDesa();
   }, []);
+
+  useEffect(() => {
+    if (!form.desaId) {
+      setExistingRoutes([]);
+      return;
+    }
+
+    axios
+      .get(`http://localhost:3000/api/jarak?desaId=${form.desaId}`)
+      .then((res) => setExistingRoutes(res.data))
+      .catch(() => setExistingRoutes([]));
+  }, [form.desaId]);
 
   // Set initial data jika mode edit
   useEffect(() => {
@@ -64,6 +76,9 @@ const AddDataModal = ({ open, onClose, initialData, refreshData }) => {
     }
   }, [initialData, open]);
 
+  const usedCities = existingRoutes.map((r) => r.titikKota);
+  const isFull = usedCities.includes("PALU") && usedCities.includes("LUWUK");
+
   const handleChange = (e) => {
     const { name, value } = e.target;
     setForm({ ...form, [name]: value });
@@ -72,7 +87,12 @@ const AddDataModal = ({ open, onClose, initialData, refreshData }) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!form.desaId) {
-      toast.error("Pilih desa terlebih dahulu");
+      toast.warning("Pilih desa terlebih dahulu");
+      return;
+    }
+
+    if (isFull) {
+      toast.warning("Desa ini sudah memiliki rute Palu & Luwuk");
       return;
     }
 
@@ -89,13 +109,13 @@ const AddDataModal = ({ open, onClose, initialData, refreshData }) => {
         "http://localhost:3000/api/jarak/insert",
         payload
       );
-      toast.success("jalur-jalur desa berhasil ditambahkan!");
+      toast.success("Jalur desa berhasil ditambahkan!");
       console.log("Add success:", res.data);
       refreshData?.();
       onClose();
     } catch (error) {
       console.error("Error:", error);
-      toast.error("Gagal menyimpan jalur-jalur desa!");
+      toast.error("Gagal menambahkan jalur-jalur desa!");
     }
   };
 
@@ -136,28 +156,46 @@ const AddDataModal = ({ open, onClose, initialData, refreshData }) => {
             </Select>
           </div>
 
+          {/* TITIK KOTA */}
           <div className="flex flex-col gap-2">
+            <Label>Titik Kota</Label>
             <Select
-              name="titikKota"
-              value={form.titikKota || ""}
-              onValueChange={(value) =>
-                handleChange({ target: { name: "titikKota", value } })
-              }
+              value={form.titikKota}
+              onValueChange={(value) => setForm({ ...form, titikKota: value })}
+              disabled={isFull}
               required
             >
-              <SelectTrigger className="w-full h-10 border border-input bg-background rounded-md px-3 text-sm">
+              <SelectTrigger
+                className="w-full
+                h-10
+                border
+                border-input
+                bg-background
+                rounded-md
+                px-3
+                text-sm"
+              >
                 <SelectValue placeholder="Pilih Titik Kota" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem className="text-md" value="PALU">
-                  Palu
+                <SelectItem value="PALU" disabled={usedCities.includes("PALU")}>
+                  Palu {usedCities.includes("PALU") && "✓"}
                 </SelectItem>
-                <SelectItem className="text-md" value="LUWUK">
-                  Luwuk
+                <SelectItem
+                  value="LUWUK"
+                  disabled={usedCities.includes("LUWUK")}
+                >
+                  Luwuk {usedCities.includes("LUWUK") && "✓"}
                 </SelectItem>
               </SelectContent>
             </Select>
           </div>
+
+          {isFull && (
+            <div className="rounded-md bg-red-50 p-3 text-sm text-red-600">
+              Desa ini sudah memiliki rute dari Palu dan Luwuk
+            </div>
+          )}
           <div className="flex flex-col gap-2">
             <Label>Jalur Darat</Label>
             <Textarea

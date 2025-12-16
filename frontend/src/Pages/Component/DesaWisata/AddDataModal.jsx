@@ -16,12 +16,11 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { toast } from "sonner";
 
 const AddDataModal = ({ open, onClose, initialData, refreshData }) => {
-  const navigate = useNavigate();
+  
 
   const [form, setForm] = useState({
     namaDesa: "",
@@ -143,22 +142,22 @@ const AddDataModal = ({ open, onClose, initialData, refreshData }) => {
               />
             </div>
             <div className="flex flex-col gap-2">
-              <Label>Longitude</Label>
-              <Input
-                name="longitude"
-                value={form.longitude}
-                onChange={handleChange}
-                placeholder="Masukkan koordinat longitude desa wisata"
-                required
-              />
-            </div>
-            <div className="flex flex-col gap-2">
               <Label>Latitude</Label>
               <Input
                 name="latitude"
                 value={form.latitude}
                 onChange={handleChange}
                 placeholder="Masukkan koordinat latitude desa wisata"
+                required
+              />
+            </div>
+            <div className="flex flex-col gap-2">
+              <Label>Longitude</Label>
+              <Input
+                name="longitude"
+                value={form.longitude}
+                onChange={handleChange}
+                placeholder="Masukkan koordinat longitude desa wisata"
                 required
               />
             </div>
