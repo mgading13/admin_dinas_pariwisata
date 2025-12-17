@@ -9,12 +9,21 @@ import DashboardRumahMakan from "../src/Pages/Component/RumahMakan/Dashboard";
 import DashboardHotel from "../src/Pages/Component/Hotel/Dashboard";
 import DashboardJarakDesa from "../src/Pages/Component/JarakDesa/Dashboard";
 import ProtectedRoute from "./Pages/Component/ProtectedRoute";
+import DashboardGrafikPengunjung from "./Pages/Component/Grafik/Dashboard";
 
 function App() {
   return (
     <BrowserRouter>
       <Routes>
         <Route path="/" element={<Login />} />
+        <Route
+          path="/admin/grafik-pengunjung"
+          element={
+            <ProtectedRoute>
+              <DashboardGrafikPengunjung />
+            </ProtectedRoute>
+          }
+        />
         <Route
           path="/admin/desa-wisata"
           element={

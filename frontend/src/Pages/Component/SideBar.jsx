@@ -23,9 +23,11 @@ import {
   Utensils,
   Hotel,
   Navigation,
+  ChartArea,
 } from "lucide-react";
 import { toast } from "sonner";
 import ProfilModal from "./ProfilModal";
+import DateTimeWidget from "../Component/DateTimeWidget";
 
 import axios from "axios";
 
@@ -103,6 +105,24 @@ export default function Sidebar({ children }) {
         {/* Scrollable Menu */}
         <ScrollArea className="flex-1 px-4 py-6">
           <nav className="space-y-2">
+            <Link
+              to="/admin/grafik-pengunjung"
+              className={`flex items-center gap-3 px-3 py-2 rounded-lg font-medium transition
+                ${
+                  isActive("/admin/grafik-pengunjung")
+                    ? "bg-purple-100 text-purple-600 font-semibold"
+                    : "text-gray-700 hover:bg-gray-100"
+                }`}
+            >
+              <ChartArea
+                className={`h-5 w-5 ${
+                  isActive("/admin/grafik-pengunjung")
+                    ? "text-purple-600"
+                    : "text-purple-500"
+                }`}
+              />
+              Grafik Pengunjung
+            </Link>
             <Link
               to="/admin/desa-wisata"
               className={`flex items-center gap-3 px-3 py-2 rounded-lg font-medium transition
@@ -230,6 +250,8 @@ export default function Sidebar({ children }) {
 
         {/* Profil Pengguna */}
         <div className="border-t p-4">
+          <DateTimeWidget />
+
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button
@@ -286,6 +308,24 @@ export default function Sidebar({ children }) {
 
               <ScrollArea className="flex-1 px-4 py-6">
                 <nav className="space-y-3">
+                  <Link
+                    to="/admin/grafik-pengunjung"
+                    className={`flex items-center gap-3 px-3 py-2 rounded-lg font-medium transition
+                ${
+                  isActive("/admin/grafik-pengunjung")
+                    ? "bg-purple-50 text-purple-600 font-semibold"
+                    : "text-gray-700 hover:bg-gray-100"
+                }`}
+                  >
+                    <ChartArea
+                      className={`h-5 w-5 ${
+                        isActive("/admin/grafik-pengunjung")
+                          ? "text-purple-600"
+                          : "text-purple-500"
+                      }`}
+                    />
+                    Grafik Pengunjung
+                  </Link>
                   <Link
                     to="/admin/desa-wisata"
                     className={`flex items-center gap-3 px-3 py-2 rounded-lg font-medium transition
@@ -402,6 +442,7 @@ export default function Sidebar({ children }) {
 
               {/* Profil & Logout di mobile */}
               <div className="border-t p-4">
+                <DateTimeWidget />
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <div className="flex items-center gap-3 mb-3 cursor-pointer">
