@@ -120,9 +120,6 @@ export default function Dashboard () {
     }
   }
 
-  /* =======================
-      LOAD DATA ONLY
-  ======================= */
   useEffect(() => {
     fetchSummary()
     fetchChart()
