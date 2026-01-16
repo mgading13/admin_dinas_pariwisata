@@ -329,6 +329,12 @@ function Dashboard () {
                 <div className='flex flex-col gap-1'>
                   <Label className='font-bold'>Deskripsi :</Label>
                   <p className='text-justify'>{selectedData.deskripsi_id}</p>
+                  <Label className='font-bold text-gray-400 mt-1 italic font-normal'>
+                    Deskripsi (EN) :
+                  </Label>
+                  <p className='text-gray-500 italic'>
+                    {selectedData.deskripsi_en}
+                  </p>
                 </div>
                 <img
                   src={`http://localhost:3000${selectedData.foto}`}
