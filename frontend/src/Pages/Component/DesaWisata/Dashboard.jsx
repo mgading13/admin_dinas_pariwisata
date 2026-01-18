@@ -202,7 +202,6 @@ function Dashboard () {
 
                       <TableCell>{formatJenisDesa(item.jenisDesa)}</TableCell>
 
-                      <TableCell>{formatJenisDesa(item.jenisDesa)}</TableCell>
 
                       <TableCell>
                         <img

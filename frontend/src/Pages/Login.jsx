@@ -38,11 +38,11 @@ const Login = () => {
         localStorage.setItem("admin", JSON.stringify(admin));
 
         toast.success("Login Berhasil");
-        navigate("/admin/desa-wisata");
+        navigate("/admin/grafik-pengunjung");
       }
     } catch (err) {
       console.error("❌ Login gagal:", err);
-      toast.error("Username atau password salah");
+      toast.error("Username atau Password Salah");
     }
   };
 
