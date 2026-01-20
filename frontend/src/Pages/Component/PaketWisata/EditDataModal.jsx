@@ -8,20 +8,55 @@ import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import axios from 'axios'
 import { toast } from 'sonner'
+import debounce from "lodash.debounce";
 
 const EditDataModal = ({ open, onClose, initialData, refreshData }) => {
+  const [loading, setLoading] = useState(false);
   const [form, setForm] = useState({
     nama_wisata_id: '',
+    nama_wisata_en: '',
     lokasi_id: '',
+    lokasi_en: '',
     deskripsi_id: '',
+    deskripsi_en: '',
     harga: '',
     hargaDisplay: '',
     kontak: '',
     media: ''
   })
+
+  // --- START LOGIKA DEBOUNCE ---
+  const translateText = async (text, fieldTarget) => {
+    if (!text || text.length < 3) return;
+    try {
+      const res = await axios.get(
+        `https://translate.googleapis.com/translate_a/single?client=gtx&sl=id&tl=en&dt=t&q=${encodeURI(text)}`
+      );
+    // PERBAIKAN: Jangan cuma ambil [0][0][0]
+    // Kita looping semua potongan kalimat yang dipisah oleh titik/newline
+      if (res.data && res.data[0]) {
+        const fullTranslation = res.data[0]
+          .map((item) => item[0]) // Ambil hasil translasinya saja
+          .filter((item) => item !== null) // Buang yang kosong
+          .join(" "); // Gabungkan kembali menjadi satu paragraf utuh
+      
+        setForm((prev) => ({ ...prev, [fieldTarget]: fullTranslation }));
+      }
+    } catch (error) {
+        console.error("Translate error:", error);
+      }
+  };
+
+  const debouncedTranslate = useCallback(
+    debounce((text, fieldTarget) => {
+      translateText(text, fieldTarget);
+    }, 1500), 
+    []
+  );
+  // --- END LOGIKA DEBOUNCE ---
 
   // Utility Format Rupiah
   const formatToRupiah = num => {
@@ -57,6 +92,8 @@ const EditDataModal = ({ open, onClose, initialData, refreshData }) => {
 
   // Isi otomatis form saat edit
   useEffect(() => {
+    if (open) {
+      setLoading(false);
     if (initialData) {
       const rawHarga = initialData.harga?.toString() || ''
       const formattedHarga = formatToRupiah(rawHarga)
@@ -68,14 +105,15 @@ const EditDataModal = ({ open, onClose, initialData, refreshData }) => {
 
       setForm({
         nama_wisata_id: initialData.nama_wisata_id || '',
+        nama_wisata_en: initialData.nama_wisata_en || '',
         lokasi_id: initialData.lokasi_id || '',
+        lokasi_en: initialData.lokasi_en || '',
         deskripsi_id: initialData.deskripsi_id || '',
+        deskripsi_en: initialData.deskripsi_en || '',
         harga: rawHarga,
         hargaDisplay: formattedHarga,
-
         kontak: formatPhoneDisplay(displayPhone.replace(/\D/g, '')),
         kontak_raw: displayPhone.replace(/\D/g, ''),
-
         media: initialData.media || ''
       })
     } else {
@@ -89,11 +127,16 @@ const EditDataModal = ({ open, onClose, initialData, refreshData }) => {
         kontak_raw: '',
         media: ''
       })
-    }
-  }, [initialData, open])
+    }}
+  }, [initialData, open]);
 
   const handleChange = e => {
     const { name, value, files } = e.target
+    setForm((prev) => ({ ...prev, [name]: value }));
+
+    if (name === "nama_wisata_id") debouncedTranslate(value, "nama_wisata_en");
+    if (name === "lokasi_id") debouncedTranslate(value, "lokasi_en");
+    if (name === "deskripsi_id") debouncedTranslate(value, "deskripsi_en");
 
     // Harga tetap sama seperti sebelumnya
     if (name === 'harga') {
@@ -122,22 +165,25 @@ const EditDataModal = ({ open, onClose, initialData, refreshData }) => {
       setForm({ ...form, media: files[0] })
       return
     }
-
-    setForm({ ...form, [name]: value })
   }
 
   // Submit
   const handleSubmit = async e => {
     e.preventDefault()
-
+    if (!initialData?.id) {
+      toast.error("ID data tidak ditemukan!");
+      return;
+    } 
+    if (loading) return;
+    setLoading(true);
     try {
       const formData = new FormData()
       formData.append('nama_wisata_id', form.nama_wisata_id)
-      formData.append('nama_wisata_en', form.nama_wisata_id)
+      formData.append('nama_wisata_en', form.nama_wisata_en)
       formData.append('lokasi_id', form.lokasi_id)
-      formData.append('lokasi_en', form.lokasi_id)
+      formData.append('lokasi_en', form.lokasi_en)
       formData.append('deskripsi_id', form.deskripsi_id)
-      formData.append('deskripsi_en', form.deskripsi_id)
+      formData.append('deskripsi_en', form.deskripsi_en)
       formData.append('harga', form.harga) // angka mentah
       formData.append('kontak', formatPhoneToDB(form.kontak_raw))
 
@@ -145,7 +191,7 @@ const EditDataModal = ({ open, onClose, initialData, refreshData }) => {
         formData.append('media', form.media)
       }
 
-      console.log('🟡 Mengirim data edit ke backend:', form)
+      // console.log('🟡 Mengirim data edit ke backend:', form)
 
       const res = await axios.patch(
         `http://localhost:3000/api/tourPackage/${initialData.id}`,
@@ -157,11 +203,13 @@ const EditDataModal = ({ open, onClose, initialData, refreshData }) => {
 
       console.log('🟢 Respons backend:', res.data)
       toast.success('Paket Wisata berhasil diperbarui!')
-      await refreshData?.()
+      refreshData?.()
       onClose()
     } catch (error) {
       console.error('❌ Gagal memperbarui data:', error)
       toast.error('Gagal memperbarui Paket Wisata!')
+    } finally {-
+      setLoading(false); // Button kembali ke "Simpan Perubahan"
     }
   }
 
@@ -176,7 +224,7 @@ const EditDataModal = ({ open, onClose, initialData, refreshData }) => {
           <div className='flex flex-col gap-2'>
             <Label>Nama Wisata</Label>
             <Input
-              name='nama_wisata'
+              name='nama_wisata_id'
               value={form.nama_wisata_id}
               onChange={handleChange}
               placeholder='Masukkan jenis wisata'
@@ -186,7 +234,7 @@ const EditDataModal = ({ open, onClose, initialData, refreshData }) => {
           <div className='flex flex-col gap-2'>
             <Label>Lokasi</Label>
             <Input
-              name='lokasi'
+              name='lokasi_id'
               value={form.lokasi_id}
               onChange={handleChange}
               placeholder='Masukkan lokasi wisata'
@@ -196,7 +244,7 @@ const EditDataModal = ({ open, onClose, initialData, refreshData }) => {
           <div className='flex flex-col gap-2'>
             <Label>Deskripsi</Label>
             <Textarea
-              name='deskripsi'
+              name='deskripsi_id'
               value={form.deskripsi_id}
               onChange={handleChange}
               placeholder='Tulis deskripsi wisata...'

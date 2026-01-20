@@ -54,6 +54,7 @@ function Dashboard () {
   const [loading, setLoading] = useState(false)
 
   const fetchData = async () => {
+    setLoading(true)
     try {
       const res = await axios.get('http://localhost:3000/api/desaWisata/')
       console.log('📦 Data dari backend:', res.data)

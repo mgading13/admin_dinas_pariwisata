@@ -54,26 +54,38 @@ function Dashboard () {
   const [loading, setLoading] = useState(false)
 
   const fetchData = async () => {
+    setLoading(true)
     try {
-      const res = await axios.get('http://localhost:3000/api/atraksi/get')
+      const res = await axios.get('http://localhost:3000/api/atraksi')
       console.log('📦 Data dari backend:', res.data)
+
+      // Ambil data array untuk tabel
       setData(res.data.data || res.data)
     } catch (err) {
       console.error('Gagal fetch data event:', err)
+      toast.error("Gagal memuat data detail")
+    } finally {
+      setLoading(false)
     }
   }
+
   useEffect(() => {
     fetchData()
   }, [])
 
   const handleOpenDetail = async id => {
+    // 1. Reset data lama agar tidak muncul data lama saat loading
+    setSelectedData(null)
     try {
       const res = await axios.get(`http://localhost:3000/api/atraksi/${id}`)
       console.log('Detail atraksi:', res.data)
-      setSelectedData(res.data.event)
-      setOpenDetailModal(true)
+      // Perbaikan: Ambil properti 'data' dari response (sesuai log konsol Anda)
+      const eventData = res.data.data || res.data.event || res.data;
+      setSelectedData(eventData);
+      setOpenDetailModal(true);
     } catch (error) {
       console.error('Gagal ambil detail atraksi:', error)
+      toast.error("Gagal memuat data")
     }
   }
 
@@ -81,10 +93,11 @@ function Dashboard () {
   const filteredData = useMemo(() => {
     return data.filter(item => {
       const matchSearch =
-        item.nameEvent_id?.toLowerCase().includes(search.toLowerCase()) ||
+        item.nameEvent?.toLowerCase().includes(search.toLowerCase()) ||
         item.location_id?.toLowerCase().includes(search.toLowerCase())
       const matchFilter =
-        filterLokasi === 'all' || item.location === filterLokasi
+        filterLokasi === 'all' || item.location_id === filterLokasi
+
       return matchSearch && matchFilter
     })
   }, [data, search, filterLokasi])
@@ -153,7 +166,7 @@ function Dashboard () {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value='all'>Semua Lokasi</SelectItem>
-                {[...new Set(data.map(d => d.location))].map(
+                {[...new Set(data.map(d => d.location_id))].map(
                   (location, index) => (
                     <SelectItem
                       key={location || index}
@@ -321,13 +334,13 @@ function Dashboard () {
           {/* 👁️ Modal Detail Data */}
           <Dialog open={openDetailModal} onOpenChange={setOpenDetailModal}>
             <DialogContent>
-              {selectedData && (
+              
                 <DialogHeader>
                   <DialogTitle>
-                    Detail Atraksi {selectedData.nameEvent}
+                    Detail Atraksi 
                   </DialogTitle>
                 </DialogHeader>
-              )}
+              
               {selectedData && (
                 <div className='space-y-2 mt-3 gap-2 flex flex-col text-md'>
                   <div className='flex flex-col gap-1'>
@@ -360,32 +373,18 @@ function Dashboard () {
                     <Label className='font-bold'>Tanggal :</Label>
                     <p>
                       <strong>Tanggal:</strong>{' '}
-                      {new Date(selectedData.startdate).toLocaleDateString(
-                        'id-ID',
-                        {
-                          day: 'numeric',
-                          month: 'long',
-                          year: 'numeric'
-                        }
-                      )}{' '}
-                      -{' '}
-                      {new Date(selectedData.enddate).toLocaleDateString(
-                        'id-ID',
-                        {
-                          day: 'numeric',
-                          month: 'long',
-                          year: 'numeric'
-                        }
-                      )}
+                      {selectedData.startdate ? formatTanggal(selectedData.startdate) : '-'} 
+                      {' '}-{' '}
+                      {selectedData.enddate ? formatTanggal(selectedData.enddate) : '-'}
                     </p>
                   </div>
-                  <img
-                    src={`http://localhost:3000${selectedData.foto}`}
-                    alt={selectedData.nama_wisata}
-                    className='w-full h-100 object-cover rounded-lg mt-2'
-                  />
                 </div>
               )}
+              <img
+                src={`http://localhost:3000${selectedData?.foto}`}
+                alt={selectedData?.nameEvent}
+                className='w-full h-100 object-cover rounded-lg mt-2'
+              />
             </DialogContent>
           </Dialog>
         </div>

@@ -8,34 +8,67 @@ import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import axios from 'axios'
 import { toast } from 'sonner'
+import debounce from "lodash.debounce";
 
 const EditDataModal = ({ open, onClose, initialData, refreshData }) => {
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate()
-
   const [form, setForm] = useState({
     nama_makanan: '',
     lokasi: '',
-    deskripsi: '',
+    deskripsi_id: '',
+    deskripsi_en: '',
     foto: ''
-  })
+  });
+
+  // --- START LOGIKA DEBOUNCE ---
+  const translateText = async (text, fieldTarget) => {
+    if (!text || text.length < 3) return;
+    try {
+      const res = await axios.get(
+        `https://translate.googleapis.com/translate_a/single?client=gtx&sl=id&tl=en&dt=t&q=${encodeURI(text)}`
+      );
+    // PERBAIKAN: Jangan cuma ambil [0][0][0]
+    // Kita looping semua potongan kalimat yang dipisah oleh titik/newline
+      if (res.data && res.data[0]) {
+        const fullTranslation = res.data[0]
+          .map((item) => item[0]) // Ambil hasil translasinya saja
+          .filter((item) => item !== null) // Buang yang kosong
+          .join(" "); // Gabungkan kembali menjadi satu paragraf utuh
+      
+        setForm((prev) => ({ ...prev, [fieldTarget]: fullTranslation }));
+      }
+    } catch (error) {
+        console.error("Translate error:", error);
+      }
+  };
+
+  const debouncedTranslate = useCallback(
+    debounce((text, fieldTarget) => {
+      translateText(text, fieldTarget);
+    }, 1500), 
+    []
+  );
+  // --- END LOGIKA DEBOUNCE ---
 
   useEffect(() => {
     if (initialData) {
       setForm({
         nama_makanan: initialData.nama_makanan || '',
         lokasi: initialData.lokasi || '',
-        deskripsi: initialData.deskripsi_id || '',
+        deskripsi_id: initialData.deskripsi_id || '',
+        deskripsi_en: initialData.deskripsi_en || '',
         foto: initialData.foto || ''
-      })
+      });
     } else {
       setForm({
         nama_makanan: '',
         lokasi: '',
-        deskripsi: '',
+        deskripsi_id: '',
         foto: ''
       })
     }
@@ -43,18 +76,30 @@ const EditDataModal = ({ open, onClose, initialData, refreshData }) => {
 
   const handleChange = e => {
     const { name, value, files } = e.target
-    if (name === 'foto') setForm({ ...form, foto: files[0] })
-    else setForm({ ...form, [name]: value })
+    setForm((prev) => ({ ...prev, [name]: value }));
+
+    // PERUBAHAN DI SINI: Trigger translate saat edit kolom Indonesia
+    if (name === "deskripsi_id") {
+      debouncedTranslate(value, "deskripsi_en");
+    }
   }
 
   const handleSubmit = async e => {
     e.preventDefault()
+    if (loading) return;
+    setLoading(true);
+
     try {
       const formData = new FormData()
       formData.append('nama_makanan', form.nama_makanan)
       formData.append('lokasi', form.lokasi)
-      formData.append('deskripsi', form.deskripsi)
-      formData.append('foto', form.foto)
+      formData.append('deskripsi_id', form.deskripsi_id)
+      formData.append('deskripsi_en', form.deskripsi_en)
+
+      // Hanya append foto jika user memilih file baru (berupa object)
+      if (form.foto && typeof form.foto === 'object') {
+        formData.append('foto', form.foto)
+      }
 
       const res = await axios.patch(
         `http://localhost:3000/api/kuliner/${initialData.id}`,
@@ -65,15 +110,20 @@ const EditDataModal = ({ open, onClose, initialData, refreshData }) => {
       )
       console.log('initialData di modal:', initialData)
 
-      toast.success('Data kuliner berhasil ditambahkan!')
       console.log('Add success:', res.data)
+      toast.success('Data kuliner berhasil ditambahkan!')
 
       refreshData?.()
       onClose()
       navigate('/admin/kuliner')
     } catch (error) {
       console.error('Error:', error)
+      // Untuk melihat detail kenapa 400 Bad Request
+      console.error("Detail Error Backend:", error.response?.data);
       toast.error('Gagal menyimpan data kuliner!')
+    } finally {
+      // --- INI BAGIAN TERPENTING ---
+      setLoading(false); // Button kembali ke "Simpan Perubahan"
     }
   }
 
@@ -86,7 +136,7 @@ const EditDataModal = ({ open, onClose, initialData, refreshData }) => {
           </DialogTitle>
         </DialogHeader>
 
-        <div className='space-y-4 mt-4'>
+        <form className='space-y-4 mt-4'>
           {/* Nama Makanan */}
           <div className='flex flex-col gap-2'>
             <Label>Nama Makanan</Label>
@@ -111,8 +161,8 @@ const EditDataModal = ({ open, onClose, initialData, refreshData }) => {
           <div className='flex flex-col gap-2'>
             <Label>Deskripsi</Label>
             <Textarea
-              name='deskripsi'
-              value={form.deskripsi}
+              name='deskripsi_id'
+              value={form.deskripsi_id}
               onChange={handleChange}
               placeholder='Tuliskan deskripsi makanan...'
             />
@@ -146,7 +196,7 @@ const EditDataModal = ({ open, onClose, initialData, refreshData }) => {
               {initialData ? 'Simpan Perubahan' : 'Tambah Data'}
             </Button>
           </div>
-        </div>
+        </form>
       </DialogContent>
     </Dialog>
   )

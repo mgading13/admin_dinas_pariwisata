@@ -15,27 +15,67 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
+import debounce from "lodash.debounce";
 import axios from "axios";
 import { toast } from "sonner";
 
 const EditDataModal = ({ open, onClose, initialData, refreshData }) => {
+  const [loading, setLoading] = useState(false);
   const [form, setForm] = useState({
     namaDesa_id: "",
+    namaDesa_en: "",
     lokasi_id: "",
+    lokasi_en: "",
     deskripsi_id: "",
+    deskripsi_en: "",
     foto: "",
     longitude: "",
     latitude: "",
     jenisDesa: "",
   });
+  
+  // --- START LOGIKA DEBOUNCE ---
+  const translateText = async (text, fieldTarget) => {
+    if (!text || text.length < 3) return;
+    try {
+      const res = await axios.get(
+        `https://translate.googleapis.com/translate_a/single?client=gtx&sl=id&tl=en&dt=t&q=${encodeURI(text)}`
+      );
+    // PERBAIKAN: Jangan cuma ambil [0][0][0]
+    // Kita looping semua potongan kalimat yang dipisah oleh titik/newline
+      if (res.data && res.data[0]) {
+        const fullTranslation = res.data[0]
+          .map((item) => item[0]) // Ambil hasil translasinya saja
+          .filter((item) => item !== null) // Buang yang kosong
+          .join(" "); // Gabungkan kembali menjadi satu paragraf utuh
+      
+        setForm((prev) => ({ ...prev, [fieldTarget]: fullTranslation }));
+      }
+    } catch (error) {
+        console.error("Translate error:", error);
+      }
+  };
+
+  const debouncedTranslate = useCallback(
+    debounce((text, fieldTarget) => {
+      translateText(text, fieldTarget);
+    }, 1500), 
+    []
+  );
+  // --- END LOGIKA DEBOUNCE ---
 
   useEffect(() => {
+    if (open) {
+      setLoading(false);
     if (initialData) {
       setForm({
         namaDesa_id: initialData.namaDesa_id || "",
+        namaDesa_en: initialData.namaDesa_en || "",
         lokasi_id: initialData.lokasi_id || "",
+        lokasi_en: initialData.lokasi_en || "",
         deskripsi_id: initialData.deskripsi_id || "",
+        deskripsi_en: initialData.deskripsi_en || "",
         foto: initialData.foto || "",
         longitude: initialData.longitude || "",
         latitude: initialData.latitude || "",
@@ -51,13 +91,22 @@ const EditDataModal = ({ open, onClose, initialData, refreshData }) => {
         latitude: "",
         jenisDesa: "",
       });
-    }
+    }}
   }, [initialData, open]);
 
   const handleChange = (e) => {
-    const { name, value, files } = e.target;
-    if (name === "foto") setForm({ ...form, foto: files[0] });
-    else setForm({ ...form, [name]: value });
+    const { name, value } = e.target;
+    setForm((prev) => ({ ...prev, [name]: value }));
+
+    // PERUBAHAN DI SINI: Trigger translate saat edit kolom Indonesia
+    if (name === "namaDesa_id") debouncedTranslate(value, "namaDesa_en");
+    if (name === "lokasi_id") debouncedTranslate(value, "lokasi_en");
+    if (name === "deskripsi_id") debouncedTranslate(value, "deskripsi_en");
+  };
+
+  const handlePhoto = (e) => {
+    const file = e.target.files[0];
+    setForm({ ...form, foto: file });
   };
 
   const handleSubmit = async (e) => {
@@ -66,18 +115,20 @@ const EditDataModal = ({ open, onClose, initialData, refreshData }) => {
     if (!initialData?.id) {
       toast.error("ID data tidak ditemukan!");
       return;
-    }
+    } 
+    if (loading) return;
+    setLoading(true);
     try {
       const formData = new FormData();
       // OTOMATISASI: Mengisi field _en dengan nilai dari field _id
       formData.append("namaDesa_id", form.namaDesa_id);
-      formData.append("namaDesa_en", form.namaDesa_id); // Otomatis sama
-
+      formData.append("namaDesa_en", form.namaDesa_en); // Otomatis sama
+      
       formData.append("lokasi_id", form.lokasi_id);
-      formData.append("lokasi_en", form.lokasi_id); // Otomatis sama
+      formData.append("lokasi_en", form.lokasi_en); // Otomatis sama
 
       formData.append("deskripsi_id", form.deskripsi_id);
-      formData.append("deskripsi_en", form.deskripsi_id); // Otomatis sama
+      formData.append("deskripsi_en", form.deskripsi_en); // Otomatis sama
 
       // 👉 FIX TERPENTING
       if (form.foto && typeof form.foto === "object") {
@@ -100,10 +151,11 @@ const EditDataModal = ({ open, onClose, initialData, refreshData }) => {
       refreshData?.();
       onClose();
     } catch (error) {
-      console.error("Error:", error.response?.data);
       // Untuk melihat detail kenapa 400 Bad Request
       console.error("Detail Error Backend:", error.response?.data);
       toast.error("Gagal menyimpan data!");
+    } finally {-
+      setLoading(false); // Button kembali ke "Simpan Perubahan"
     }
   };
 
@@ -217,8 +269,8 @@ const EditDataModal = ({ open, onClose, initialData, refreshData }) => {
               <Button type="button" variant="outline" onClick={onClose}>
                 Batal
               </Button>
-              <Button type="submit">
-                {initialData ? "Simpan Perubahan" : "Tambah Data"}
+              <Button type="submit" disabled={loading}>
+                {loading ? "Menyimpan..." : "Simpan Perubahan"}
               </Button>
             </div>
           </div>

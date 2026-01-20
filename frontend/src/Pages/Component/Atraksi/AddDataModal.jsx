@@ -8,41 +8,75 @@ import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import axios from 'axios'
 import { toast } from 'sonner'
+import debounce from "lodash.debounce";
 
 const AddDataModal = ({ open, onClose, initialData, refreshData }) => {
   const navigate = useNavigate()
-
+  const [loading, setLoading] = useState(false)
   const [form, setForm] = useState({
     nameEvent: '',
-    description: '',
-    foto: '',
+    description: '', // Gunakan _id agar sinkron
+    description_en: '',
+    location: '',    // Gunakan _id agar sinkron
+    location_en: '',
     startdate: '',
     enddate: '',
-    location: ''
+    foto: ''
   })
+
+  // --- LOGIKA DEBOUNCE TRANSLATE ---
+  const translateText = async (text, fieldTarget) => {
+    if (!text || text.trim().length < 3) return;
+    try {
+      const res = await axios.get(
+        `https://translate.googleapis.com/translate_a/single?client=gtx&sl=id&tl=en&dt=t&q=${encodeURI(text)}`
+      );
+      if (res.data && res.data[0]) {
+        const fullTranslation = res.data[0]
+          .map((item) => item[0])
+          .join("");
+        setForm((prev) => ({ ...prev, [fieldTarget]: fullTranslation }));
+      }
+    } catch (error) {
+      console.error("Translate error:", error);
+    }
+  };
+
+  const debouncedTranslate = useCallback(
+    debounce((text, fieldTarget) => {
+      translateText(text, fieldTarget);
+    }, 1500),
+    []
+  );
+
+  // --- END LOGIKA DEBOUNCE ---
 
   useEffect(() => {
     if (initialData) {
       setForm({
         nameEvent: initialData.nameEvent || '',
         description: initialData.description_id || '',
+        description_en: initialData.description_en || '',
         foto: initialData.foto || '',
         startdate: initialData.startdate?.split('T')[0] || '',
         enddate: initialData.enddate?.split('T')[0] || '',
-        location: initialData.location_id || ''
+        location: initialData.location_id || '',
+        location_en: initialData.location_en || ''
       })
     } else {
       setForm({
         nameEvent: '',
         description: '',
+        description_en: '',
         foto: '',
         startdate: '',
         enddate: '',
-        location: ''
+        location: '',
+        location_en: ''
       })
     }
   }, [initialData, open])
@@ -50,6 +84,14 @@ const AddDataModal = ({ open, onClose, initialData, refreshData }) => {
   const handleChange = e => {
     const { name, value } = e.target
     setForm({ ...form, [name]: value })
+
+    // TRIGGER TRANSLATE OTOMATIS
+    if (name === "description") {
+      debouncedTranslate(value, "description_en");
+    }
+    if (name === "location") {
+      debouncedTranslate(value, "location_en");
+    }
   }
 
   const handlePhoto = e => {
@@ -59,32 +101,39 @@ const AddDataModal = ({ open, onClose, initialData, refreshData }) => {
 
   const handleSubmit = async e => {
     e.preventDefault()
+    setLoading(true)
     try {
       const formData = new FormData()
       formData.append('nameEvent', form.nameEvent)
-      formData.append('description', form.description)
+      formData.append('description_id', form.description)
+      formData.append('description_en', form.description_en)
+      formData.append('startdate', form.startdate)
+      formData.append('enddate', form.enddate)
+      formData.append('location_id', form.location)
+      formData.append('location_en', form.location_en)
       if (form.foto && typeof form.foto === 'object') {
         formData.append('foto', form.foto)
       }
-      formData.append('startdate', form.startdate)
-      formData.append('enddate', form.enddate)
-      formData.append('location', form.location)
 
       // 🟢 Mode Tambah
       const res = await axios.post(
         'http://localhost:3000/api/atraksi/insert',
-        formData
-      )
+        formData,
+        {
+          headers: { "Content-Type": "multipart/form-data" },
+        },
+      );
+      console.log("Response:", res.data);
       toast.success('Data berhasil ditambahkan!')
       navigate('/admin/atraksi')
-      onClose()
       console.log('Add success:', res.data)
-
       refreshData?.()
       onClose()
     } catch (error) {
       console.error('Error:', error)
       toast.error('Gagal menyimpan data!')
+    } finally {
+      setLoading(false); // Matikan loading
     }
   }
 

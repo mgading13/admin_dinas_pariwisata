@@ -15,30 +15,69 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import axios from "axios";
 import { toast } from "sonner";
+import debounce from "lodash.debounce";
 
 const AddDataModal = ({ open, onClose, initialData, refreshData }) => {
   const [loading, setLoading] = useState(false); // 1. Tambah state loading
 
   const [form, setForm] = useState({
     namaDesa: "",
+    namaDesa_en: "",
     lokasi: "",
+    lokasi_en: "",
     deskripsi: "",
+    deskripsi_en: "",
     foto: "",
     longitude: "",
     latitude: "",
     jenisDesa: "",
   });
 
+  // --- LOGIKA DEBOUNCE TRANSLATE ---
+  
+  const translateText = async (text, fieldTarget) => {
+    if (!text || text.length < 3) return;
+    try {
+      const res = await axios.get(
+        `https://translate.googleapis.com/translate_a/single?client=gtx&sl=id&tl=en&dt=t&q=${encodeURI(text)}`
+      );
+    // PERBAIKAN: Jangan cuma ambil [0][0][0]
+    // Kita looping semua potongan kalimat yang dipisah oleh titik/newline
+      if (res.data && res.data[0]) {
+        const fullTranslation = res.data[0]
+          .map((item) => item[0]) // Ambil hasil translasinya saja
+          .filter((item) => item !== null) // Buang yang kosong
+          .join(" "); // Gabungkan kembali menjadi satu paragraf utuh
+      
+        setForm((prev) => ({ ...prev, [fieldTarget]: fullTranslation }));
+      }
+    } catch (error) {
+        console.error("Translate error:", error);
+      }
+  };
+
+  const debouncedTranslate = useCallback(
+    debounce((text, fieldTarget) => {
+      translateText(text, fieldTarget);
+    }, 1500), // Tunggu 1 detik setelah berhenti mengetik
+    []
+  );
+
+  // --- END LOGIKA DEBOUNCE ---
+
   useEffect(() => {
     if (initialData) {
       setForm({
         // 2. Ambil dari kolom _id karena itu versi Indonesianya
         namaDesa: initialData.namaDesa_id || "",
+        namaDesa_en: initialData.namaDesa_en || "",
         lokasi: initialData.lokasi_id || "",
+        lokasi_en: initialData.lokasi_en || "",
         deskripsi: initialData.deskripsi_id || "",
+        deskripsi_en: initialData.deskripsi_en || "",
         foto: initialData.foto || "",
         longitude: initialData.longitude || "",
         latitude: initialData.latitude || "",
@@ -46,9 +85,9 @@ const AddDataModal = ({ open, onClose, initialData, refreshData }) => {
       });
     } else {
       setForm({
-        namaDesa: "",
-        lokasi: "",
-        deskripsi: "",
+        namaDesa: "", namaDesa_en: "",
+        lokasi: "", lokasi_en: "",
+        deskripsi: "", deskripsi_en: "",
         foto: "",
         longitude: "",
         latitude: "",
@@ -59,7 +98,12 @@ const AddDataModal = ({ open, onClose, initialData, refreshData }) => {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setForm({ ...form, [name]: value });
+    setForm((prev) => ({ ...prev, [name]: value }));
+
+    // Trigger Debounce Translate jika yang diketik kolom ID
+    if (name === "namaDesa") debouncedTranslate(value, "namaDesa_en");
+    if (name === "lokasi") debouncedTranslate(value, "lokasi_en");
+    if (name === "deskripsi") debouncedTranslate(value, "deskripsi_en");
   };
 
   const handlePhoto = (e) => {
@@ -72,9 +116,13 @@ const AddDataModal = ({ open, onClose, initialData, refreshData }) => {
     setLoading(true); // 3. Mulai loading
     try {
       const formData = new FormData();
-      formData.append("namaDesa", form.namaDesa);
-      formData.append("lokasi", form.lokasi);
-      formData.append("deskripsi", form.deskripsi);
+      // Kirim field sesuai yang diminta Prisma (ID dan EN)
+      formData.append("namaDesa_id", form.namaDesa);
+      formData.append("namaDesa_en", form.namaDesa_en);
+      formData.append("lokasi_id", form.lokasi);
+      formData.append("lokasi_en", form.lokasi_en);
+      formData.append("deskripsi_id", form.deskripsi);
+      formData.append("deskripsi_en", form.deskripsi_en);
 
       // 👉 FIX TERPENTING
       if (form.foto && typeof form.foto === "object") {

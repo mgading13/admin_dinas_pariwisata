@@ -8,9 +8,10 @@ import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import axios from 'axios'
 import { toast } from 'sonner'
+import debounce from "lodash.debounce";
 
 const AddDataModal = ({ open, onClose, initialData, refreshData }) => {
   const [loading, setLoading] = useState(false)
@@ -18,9 +19,42 @@ const AddDataModal = ({ open, onClose, initialData, refreshData }) => {
   const [form, setForm] = useState({
     nama_makanan: '',
     lokasi: '',
-    deskripsi: '',
+    deskripsi_id: '',
+    deskripsi_en: '',
     foto: ''
   })
+
+  // --- LOGIKA DEBOUNCE TRANSLATE ---
+    
+  const translateText = async (text, fieldTarget) => {
+    if (!text || text.length < 3) return;
+    try {
+      const res = await axios.get(
+        `https://translate.googleapis.com/translate_a/single?client=gtx&sl=id&tl=en&dt=t&q=${encodeURI(text)}`
+      );
+    // PERBAIKAN: Jangan cuma ambil [0][0][0]
+    // Kita looping semua potongan kalimat yang dipisah oleh titik/newline
+      if (res.data && res.data[0]) {
+        const fullTranslation = res.data[0]
+          .map((item) => item[0]) // Ambil hasil translasinya saja
+          .filter((item) => item !== null) // Buang yang kosong
+          .join(" "); // Gabungkan kembali menjadi satu paragraf utuh
+      
+        setForm((prev) => ({ ...prev, [fieldTarget]: fullTranslation }));
+      }
+    } catch (error) {
+        console.error("Translate error:", error);
+      }
+  };
+
+  const debouncedTranslate = useCallback(
+    debounce((text, fieldTarget) => {
+      translateText(text, fieldTarget);
+    }, 1500), // Tunggu 1 detik setelah berhenti mengetik
+    []
+  );
+
+  // --- END LOGIKA DEBOUNCE ---
 
   // 🔁 SET FORM SAAT EDIT / OPEN MODAL
   useEffect(() => {
@@ -28,15 +62,15 @@ const AddDataModal = ({ open, onClose, initialData, refreshData }) => {
       setForm({
         nama_makanan: initialData.nama_makanan || '',
         lokasi: initialData.lokasi || '',
-        // 🔥 PENTING: AMBIL deskripsi_id
         deskripsi: initialData.deskripsi_id || '',
+        deskripsi_en: initialData.deskripsi_en || '',
         foto: initialData.foto || ''
       })
     } else {
       setForm({
         nama_makanan: '',
         lokasi: '',
-        deskripsi: '',
+        deskripsi: '', deskripsi_en: '',
         foto: ''
       })
     }
@@ -44,12 +78,22 @@ const AddDataModal = ({ open, onClose, initialData, refreshData }) => {
 
   const handleChange = e => {
     const { name, value } = e.target
-    setForm({ ...form, [name]: value })
+    setForm((prev) => ({ ...prev, [name]: value }));
+
+    // TRIGGER TRANSLATE HANYA UNTUK DESKRIPSI
+    if (name === "deskripsi_id") {
+      debouncedTranslate(value, "deskripsi_en");
+    }
   }
 
   const handlePhoto = e => {
     const file = e.target.files[0]
     setForm({ ...form, foto: file })
+
+    // // Trigger Debounce Translate jika yang diketik kolom ID
+    // if (name === "namaDesa") debouncedTranslate(value, "namaDesa_en");
+    // if (name === "lokasi") debouncedTranslate(value, "lokasi_en");
+    // if (name === "deskripsi") debouncedTranslate(value, "deskripsi_en");
   }
 
   const handleSubmit = async e => {
@@ -60,10 +104,8 @@ const AddDataModal = ({ open, onClose, initialData, refreshData }) => {
       const formData = new FormData()
       formData.append('nama_makanan', form.nama_makanan)
       formData.append('lokasi', form.lokasi)
-
-      // 🔥 KIRIM SATU DESKRIPSI (INDONESIA)
-      // BACKEND YANG TERJEMAHKAN
-      formData.append('deskripsi', form.deskripsi)
+      formData.append('deskripsi_id', form.deskripsi_id)
+      formData.append('deskripsi_en', form.deskripsi_en)
 
       if (form.foto && typeof form.foto === 'object') {
         formData.append('foto', form.foto)
@@ -123,8 +165,8 @@ const AddDataModal = ({ open, onClose, initialData, refreshData }) => {
             <div className='flex flex-col gap-2'>
               <Label>Deskripsi</Label>
               <Textarea
-                name='deskripsi'
-                value={form.deskripsi}
+                name='deskripsi_id'
+                value={form.deskripsi_id}
                 onChange={handleChange}
                 placeholder='Tulis deskripsi kuliner...'
                 required
