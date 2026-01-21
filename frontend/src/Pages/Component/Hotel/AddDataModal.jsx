@@ -105,7 +105,7 @@ const AddDataModal = ({ open, onClose, initialData, refreshData }) => {
         formData,
         {
           headers: { "Content-Type": "multipart/form-data" },
-        }
+        },
       );
       console.log("Response:", res.data);
       toast.success("Data berhasil ditambahkan!");
@@ -119,7 +119,7 @@ const AddDataModal = ({ open, onClose, initialData, refreshData }) => {
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="max-w-md max-h-[95vh] overflow-y-auto">
+      <DialogContent className="w-full max-w-md max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>
             {initialData ? "Edit Data Hotel" : "Tambah Data Hotel"}
@@ -135,6 +135,7 @@ const AddDataModal = ({ open, onClose, initialData, refreshData }) => {
                 onChange={handleChange}
                 placeholder="Masukkan nama hotel"
                 required
+                className="w-full"
               />
             </div>
 
@@ -146,6 +147,7 @@ const AddDataModal = ({ open, onClose, initialData, refreshData }) => {
                 onChange={handleChange}
                 placeholder="Masukkan lokasi hotel"
                 required
+                className="w-full"
               />
             </div>
 
@@ -158,6 +160,7 @@ const AddDataModal = ({ open, onClose, initialData, refreshData }) => {
                 onChange={handleChange}
                 placeholder="Masukkan jumlah kamar"
                 required
+                className="w-full"
               />
             </div>
 
@@ -170,6 +173,7 @@ const AddDataModal = ({ open, onClose, initialData, refreshData }) => {
                 onChange={handleChange}
                 placeholder="Masukkan jumlah tempat tidur"
                 required
+                className="w-full"
               />
             </div>
 
@@ -181,6 +185,7 @@ const AddDataModal = ({ open, onClose, initialData, refreshData }) => {
                 onChange={handleChange}
                 placeholder="Masukkan harga per malam"
                 required
+                className="w-full"
               />
             </div>
 
@@ -190,7 +195,8 @@ const AddDataModal = ({ open, onClose, initialData, refreshData }) => {
                 name="website"
                 value={form.website}
                 onChange={handleChange}
-                placeholder="Masukkan website hotel"
+                placeholder="Masukkan link website hotel"
+                className="w-full"
               />
             </div>
 
@@ -201,7 +207,7 @@ const AddDataModal = ({ open, onClose, initialData, refreshData }) => {
                 value={form.link_gmaps}
                 onChange={handleChange}
                 placeholder="Masukkan link Google Maps"
-                required
+                className="w-full"
               />
             </div>
 
@@ -212,26 +218,55 @@ const AddDataModal = ({ open, onClose, initialData, refreshData }) => {
                 value={form.telepon}
                 onChange={handleChange}
                 placeholder="Masukkan nomor telepon hotel"
-                required
+                className="w-full"
               />
             </div>
 
             <div className="flex flex-col gap-2">
-              <Label>Foto</Label>
+              <Label>Foto / Video</Label>
+
               <Input
                 name="foto"
                 type="file"
-                accept="image/*"
+                accept="image/*,video/*"
                 onChange={handlePhoto}
                 required={!initialData}
+                className="w-full"
               />
-              {form.foto && typeof form.foto === "string" && (
-                <img
-                  src={form.foto}
-                  alt="Preview"
-                  className="mt-2 w-24 h-24 object-cover rounded-md border"
-                />
-              )}
+
+              {/* Preview file lama */}
+              {form.foto &&
+                typeof form.foto === "string" &&
+                (form.foto.match(/\.(mp4|webm|ogg)$/i) ? (
+                  <video
+                    src={form.foto}
+                    controls
+                    className="mt-2 w-32 h-32 rounded-md border object-cover"
+                  />
+                ) : (
+                  <img
+                    src={form.foto}
+                    alt="Preview"
+                    className="mt-2 w-24 h-24 object-cover rounded-md border"
+                  />
+                ))}
+
+              {/* Preview file baru */}
+              {form.foto &&
+                typeof form.foto === "object" &&
+                (form.foto.type.startsWith("video/") ? (
+                  <video
+                    src={URL.createObjectURL(form.foto)}
+                    controls
+                    className="mt-2 w-32 h-32 rounded-md border object-cover"
+                  />
+                ) : (
+                  <img
+                    src={URL.createObjectURL(form.foto)}
+                    alt="Preview"
+                    className="mt-2 w-24 h-24 object-cover rounded-md border"
+                  />
+                ))}
             </div>
 
             <div className="flex justify-end gap-2 mt-4">

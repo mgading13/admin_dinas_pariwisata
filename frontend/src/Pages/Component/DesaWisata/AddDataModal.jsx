@@ -37,33 +37,33 @@ const AddDataModal = ({ open, onClose, initialData, refreshData }) => {
   });
 
   // --- LOGIKA DEBOUNCE TRANSLATE ---
-  
+
   const translateText = async (text, fieldTarget) => {
     if (!text || text.length < 3) return;
     try {
       const res = await axios.get(
-        `https://translate.googleapis.com/translate_a/single?client=gtx&sl=id&tl=en&dt=t&q=${encodeURI(text)}`
+        `https://translate.googleapis.com/translate_a/single?client=gtx&sl=id&tl=en&dt=t&q=${encodeURI(text)}`,
       );
-    // PERBAIKAN: Jangan cuma ambil [0][0][0]
-    // Kita looping semua potongan kalimat yang dipisah oleh titik/newline
+      // PERBAIKAN: Jangan cuma ambil [0][0][0]
+      // Kita looping semua potongan kalimat yang dipisah oleh titik/newline
       if (res.data && res.data[0]) {
         const fullTranslation = res.data[0]
           .map((item) => item[0]) // Ambil hasil translasinya saja
           .filter((item) => item !== null) // Buang yang kosong
           .join(" "); // Gabungkan kembali menjadi satu paragraf utuh
-      
+
         setForm((prev) => ({ ...prev, [fieldTarget]: fullTranslation }));
       }
     } catch (error) {
-        console.error("Translate error:", error);
-      }
+      console.error("Translate error:", error);
+    }
   };
 
   const debouncedTranslate = useCallback(
     debounce((text, fieldTarget) => {
       translateText(text, fieldTarget);
     }, 1500), // Tunggu 1 detik setelah berhenti mengetik
-    []
+    [],
   );
 
   // --- END LOGIKA DEBOUNCE ---
@@ -85,9 +85,12 @@ const AddDataModal = ({ open, onClose, initialData, refreshData }) => {
       });
     } else {
       setForm({
-        namaDesa: "", namaDesa_en: "",
-        lokasi: "", lokasi_en: "",
-        deskripsi: "", deskripsi_en: "",
+        namaDesa: "",
+        namaDesa_en: "",
+        lokasi: "",
+        lokasi_en: "",
+        deskripsi: "",
+        deskripsi_en: "",
         foto: "",
         longitude: "",
         latitude: "",
@@ -242,22 +245,50 @@ const AddDataModal = ({ open, onClose, initialData, refreshData }) => {
             </div>
 
             <div className="flex flex-col gap-2">
-              <Label>Foto</Label>
+              <Label>Foto / Video</Label>
+
               <Input
                 name="foto"
                 type="file"
-                accept="image/*"
+                accept="image/*,video/*"
                 onChange={handlePhoto}
                 required={!initialData}
                 className="w-full"
               />
-              {form.foto && typeof form.foto === "string" && (
-                <img
-                  src={form.foto}
-                  alt="Preview"
-                  className="mt-2 w-24 h-24 object-cover rounded-md border"
-                />
-              )}
+
+              {/* Preview file lama */}
+              {form.foto &&
+                typeof form.foto === "string" &&
+                (form.foto.match(/\.(mp4|webm|ogg)$/i) ? (
+                  <video
+                    src={form.foto}
+                    controls
+                    className="mt-2 w-32 h-32 rounded-md border object-cover"
+                  />
+                ) : (
+                  <img
+                    src={form.foto}
+                    alt="Preview"
+                    className="mt-2 w-24 h-24 object-cover rounded-md border"
+                  />
+                ))}
+
+              {/* Preview file baru */}
+              {form.foto &&
+                typeof form.foto === "object" &&
+                (form.foto.type.startsWith("video/") ? (
+                  <video
+                    src={URL.createObjectURL(form.foto)}
+                    controls
+                    className="mt-2 w-32 h-32 rounded-md border object-cover"
+                  />
+                ) : (
+                  <img
+                    src={URL.createObjectURL(form.foto)}
+                    alt="Preview"
+                    className="mt-2 w-24 h-24 object-cover rounded-md border"
+                  />
+                ))}
             </div>
 
             <div className="flex justify-end gap-2 mt-4">

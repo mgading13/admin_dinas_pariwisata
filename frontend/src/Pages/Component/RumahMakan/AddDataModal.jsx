@@ -4,6 +4,13 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
@@ -70,7 +77,7 @@ const AddDataModal = ({ open, onClose, initialData, refreshData }) => {
         formData,
         {
           headers: { "Content-Type": "multipart/form-data" },
-        }
+        },
       );
       toast.success("Data rumah makan berhasil ditambahkan!");
       console.log("Add success:", res.data);
@@ -84,7 +91,7 @@ const AddDataModal = ({ open, onClose, initialData, refreshData }) => {
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="max-w-md">
+      <DialogContent className="w-full max-w-md max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>
             {initialData ? "Edit Rumah Makan" : "Tambah Rumah Makan"}
@@ -101,26 +108,38 @@ const AddDataModal = ({ open, onClose, initialData, refreshData }) => {
               onChange={handleChange}
               placeholder="Masukkan nama rumah makan"
               required
+              className="w-full"
             />
           </div>
 
           {/* Dropdown Kuliner */}
           <div className="flex flex-col gap-2">
-            <Label>Pilih Jenis Makanan</Label>
-            <select
+            <Label>Pilih Jenis Kuliner</Label>
+
+            <Select
               name="kulinerId"
-              value={form.kulinerId}
-              onChange={handleChange}
-              className="border p-2 rounded-md"
+              value={form.kulinerId || ""}
+              onValueChange={(value) =>
+                handleChange({ target: { name: "kulinerId", value } })
+              }
               required
             >
-              <option value="">-- Pilih Makanan --</option>
-              {kulinerList.map((item) => (
-                <option key={item.id} value={item.id}>
-                  {item.nama_makanan}
-                </option>
-              ))}
-            </select>
+              <SelectTrigger className="w-full h-10 border border-input bg-background rounded-md px-3 text-sm">
+                <SelectValue placeholder="Pilih Kuliner" />
+              </SelectTrigger>
+
+              <SelectContent className="min-w-[var(--radix-select-trigger-width)]">
+                {kulinerList.map((item) => (
+                  <SelectItem
+                    key={item.id}
+                    value={String(item.id)}
+                    className="text-md"
+                  >
+                    {item.nama_makanan}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
 
           {/* Link Gmaps */}
@@ -131,6 +150,8 @@ const AddDataModal = ({ open, onClose, initialData, refreshData }) => {
               value={form.link_gmaps}
               onChange={handleChange}
               placeholder="Tempelkan link Google Maps..."
+              required
+              className="w-full"
             />
           </div>
 

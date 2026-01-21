@@ -215,7 +215,7 @@ const EditDataModal = ({ open, onClose, initialData, refreshData }) => {
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className='max-w-md'>
+      <DialogContent className="w-full max-w-md max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Edit Paket Wisata</DialogTitle>
         </DialogHeader>
@@ -227,7 +227,9 @@ const EditDataModal = ({ open, onClose, initialData, refreshData }) => {
               name='nama_wisata_id'
               value={form.nama_wisata_id}
               onChange={handleChange}
-              placeholder='Masukkan jenis wisata'
+              placeholder='Masukkan nama paket wisata'
+              required
+              className="w-full"
             />
           </div>
 
@@ -238,6 +240,8 @@ const EditDataModal = ({ open, onClose, initialData, refreshData }) => {
               value={form.lokasi_id}
               onChange={handleChange}
               placeholder='Masukkan lokasi wisata'
+              required
+              className="w-full"
             />
           </div>
 
@@ -247,7 +251,9 @@ const EditDataModal = ({ open, onClose, initialData, refreshData }) => {
               name='deskripsi_id'
               value={form.deskripsi_id}
               onChange={handleChange}
-              placeholder='Tulis deskripsi wisata...'
+              placeholder='Tulis deskripsi paket wisata...'
+              required
+              className="w-full resize-none break-all whitespace-pre-wrap overflow-x-hidden"
             />
           </div>
 
@@ -258,6 +264,8 @@ const EditDataModal = ({ open, onClose, initialData, refreshData }) => {
               value={form.hargaDisplay}
               onChange={handleChange}
               placeholder='Masukkan harga wisata'
+              required
+              className="w-full"
             />
           </div>
 
@@ -268,6 +276,8 @@ const EditDataModal = ({ open, onClose, initialData, refreshData }) => {
               value={form.kontak}
               onChange={handleChange}
               placeholder='Masukkan kontak paket wisata'
+              required
+              className="w-full"
             />
           </div>
 
@@ -278,6 +288,8 @@ const EditDataModal = ({ open, onClose, initialData, refreshData }) => {
               type='file'
               accept='image/*'
               onChange={handleChange}
+              required={!initialData}
+              className="w-full"
             />
 
             {form.media && typeof form.media === 'string' && (

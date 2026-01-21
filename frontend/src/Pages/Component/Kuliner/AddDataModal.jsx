@@ -2,56 +2,56 @@ import {
   Dialog,
   DialogContent,
   DialogHeader,
-  DialogTitle
-} from '@/components/ui/dialog'
-import { Input } from '@/components/ui/input'
-import { Button } from '@/components/ui/button'
-import { Label } from '@/components/ui/label'
-import { Textarea } from '@/components/ui/textarea'
-import { useState, useEffect, useCallback } from 'react'
-import axios from 'axios'
-import { toast } from 'sonner'
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { useState, useEffect, useCallback } from "react";
+import axios from "axios";
+import { toast } from "sonner";
 import debounce from "lodash.debounce";
 
 const AddDataModal = ({ open, onClose, initialData, refreshData }) => {
-  const [loading, setLoading] = useState(false)
+  const [loading, setLoading] = useState(false);
 
   const [form, setForm] = useState({
-    nama_makanan: '',
-    lokasi: '',
-    deskripsi_id: '',
-    deskripsi_en: '',
-    foto: ''
-  })
+    nama_makanan: "",
+    lokasi: "",
+    deskripsi_id: "",
+    deskripsi_en: "",
+    foto: "",
+  });
 
   // --- LOGIKA DEBOUNCE TRANSLATE ---
-    
+
   const translateText = async (text, fieldTarget) => {
     if (!text || text.length < 3) return;
     try {
       const res = await axios.get(
-        `https://translate.googleapis.com/translate_a/single?client=gtx&sl=id&tl=en&dt=t&q=${encodeURI(text)}`
+        `https://translate.googleapis.com/translate_a/single?client=gtx&sl=id&tl=en&dt=t&q=${encodeURI(text)}`,
       );
-    // PERBAIKAN: Jangan cuma ambil [0][0][0]
-    // Kita looping semua potongan kalimat yang dipisah oleh titik/newline
+      // PERBAIKAN: Jangan cuma ambil [0][0][0]
+      // Kita looping semua potongan kalimat yang dipisah oleh titik/newline
       if (res.data && res.data[0]) {
         const fullTranslation = res.data[0]
           .map((item) => item[0]) // Ambil hasil translasinya saja
           .filter((item) => item !== null) // Buang yang kosong
           .join(" "); // Gabungkan kembali menjadi satu paragraf utuh
-      
+
         setForm((prev) => ({ ...prev, [fieldTarget]: fullTranslation }));
       }
     } catch (error) {
-        console.error("Translate error:", error);
-      }
+      console.error("Translate error:", error);
+    }
   };
 
   const debouncedTranslate = useCallback(
     debounce((text, fieldTarget) => {
       translateText(text, fieldTarget);
     }, 1500), // Tunggu 1 detik setelah berhenti mengetik
-    []
+    [],
   );
 
   // --- END LOGIKA DEBOUNCE ---
@@ -60,153 +60,181 @@ const AddDataModal = ({ open, onClose, initialData, refreshData }) => {
   useEffect(() => {
     if (initialData) {
       setForm({
-        nama_makanan: initialData.nama_makanan || '',
-        lokasi: initialData.lokasi || '',
-        deskripsi: initialData.deskripsi_id || '',
-        deskripsi_en: initialData.deskripsi_en || '',
-        foto: initialData.foto || ''
-      })
+        nama_makanan: initialData.nama_makanan || "",
+        lokasi: initialData.lokasi || "",
+        deskripsi: initialData.deskripsi_id || "",
+        deskripsi_en: initialData.deskripsi_en || "",
+        foto: initialData.foto || "",
+      });
     } else {
       setForm({
-        nama_makanan: '',
-        lokasi: '',
-        deskripsi: '', deskripsi_en: '',
-        foto: ''
-      })
+        nama_makanan: "",
+        lokasi: "",
+        deskripsi: "",
+        deskripsi_en: "",
+        foto: "",
+      });
     }
-  }, [initialData, open])
+  }, [initialData, open]);
 
-  const handleChange = e => {
-    const { name, value } = e.target
+  const handleChange = (e) => {
+    const { name, value } = e.target;
     setForm((prev) => ({ ...prev, [name]: value }));
 
     // TRIGGER TRANSLATE HANYA UNTUK DESKRIPSI
     if (name === "deskripsi_id") {
       debouncedTranslate(value, "deskripsi_en");
     }
-  }
+  };
 
-  const handlePhoto = e => {
-    const file = e.target.files[0]
-    setForm({ ...form, foto: file })
+  const handlePhoto = (e) => {
+    const file = e.target.files[0];
+    setForm({ ...form, foto: file });
+  };
 
-    // // Trigger Debounce Translate jika yang diketik kolom ID
-    // if (name === "namaDesa") debouncedTranslate(value, "namaDesa_en");
-    // if (name === "lokasi") debouncedTranslate(value, "lokasi_en");
-    // if (name === "deskripsi") debouncedTranslate(value, "deskripsi_en");
-  }
-
-  const handleSubmit = async e => {
-    e.preventDefault()
-    setLoading(true)
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
 
     try {
-      const formData = new FormData()
-      formData.append('nama_makanan', form.nama_makanan)
-      formData.append('lokasi', form.lokasi)
-      formData.append('deskripsi_id', form.deskripsi_id)
-      formData.append('deskripsi_en', form.deskripsi_en)
+      const formData = new FormData();
+      formData.append("nama_makanan", form.nama_makanan);
+      formData.append("lokasi", form.lokasi);
+      formData.append("deskripsi_id", form.deskripsi_id);
+      formData.append("deskripsi_en", form.deskripsi_en);
 
-      if (form.foto && typeof form.foto === 'object') {
-        formData.append('foto', form.foto)
+      if (form.foto && typeof form.foto === "object") {
+        formData.append("foto", form.foto);
       }
 
       const res = await axios.post(
-        'http://localhost:3000/api/kuliner/insert',
+        "http://localhost:3000/api/kuliner/insert",
         formData,
-        { headers: { 'Content-Type': 'multipart/form-data' } }
-      )
+        { headers: { "Content-Type": "multipart/form-data" } },
+      );
 
-      console.log('Response:', res.data)
-      toast.success('Data kuliner berhasil ditambahkan!')
-      refreshData?.()
-      onClose()
+      console.log("Response:", res.data);
+      toast.success("Data kuliner berhasil ditambahkan!");
+      refreshData?.();
+      onClose();
     } catch (error) {
-      console.error('Error:', error.response?.data)
-      toast.error('Gagal menyimpan data kuliner!')
+      console.error("Error:", error.response?.data);
+      toast.error("Gagal menyimpan data kuliner!");
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className='max-w-md'>
+      <DialogContent className="w-full max-w-md max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>
-            {initialData ? 'Edit Data Kuliner' : 'Tambah Data Kuliner'}
+            {initialData ? "Edit Data Kuliner" : "Tambah Data Kuliner"}
           </DialogTitle>
         </DialogHeader>
 
         <form onSubmit={handleSubmit}>
-          <div className='space-y-4 mt-4'>
-            <div className='flex flex-col gap-2'>
+          <div className="space-y-4 mt-4">
+            <div className="flex flex-col gap-2">
               <Label>Nama Makanan</Label>
               <Input
-                name='nama_makanan'
+                name="nama_makanan"
                 value={form.nama_makanan}
                 onChange={handleChange}
-                placeholder='Masukkan nama makanan'
+                placeholder="Masukkan nama makanan"
                 required
+                className="w-full"
               />
             </div>
 
-            <div className='flex flex-col gap-2'>
+            <div className="flex flex-col gap-2">
               <Label>Daerah</Label>
               <Input
-                name='lokasi'
+                name="lokasi"
                 value={form.lokasi}
                 onChange={handleChange}
-                placeholder='Masukkan daerah kuliner'
+                placeholder="Masukkan daerah kuliner"
                 required
+                className="w-full"
               />
             </div>
 
-            <div className='flex flex-col gap-2'>
+            <div className="flex flex-col gap-2">
               <Label>Deskripsi</Label>
               <Textarea
-                name='deskripsi_id'
+                name="deskripsi_id"
                 value={form.deskripsi_id}
                 onChange={handleChange}
-                placeholder='Tulis deskripsi kuliner...'
+                placeholder="Tulis deskripsi kuliner..."
                 required
+                className="w-full resize-none break-all whitespace-pre-wrap overflow-x-hidden"
               />
             </div>
 
-            <div className='flex flex-col gap-2'>
-              <Label>Foto</Label>
+            <div className="flex flex-col gap-2">
+              <Label>Foto / Video</Label>
+
               <Input
-                type='file'
-                accept='image/*'
+                name="foto"
+                type="file"
+                accept="image/*,video/*"
                 onChange={handlePhoto}
-                required={!initialData}
+                className="w-full"
               />
-              {form.foto && typeof form.foto === 'string' && (
-                <img
-                  src={form.foto}
-                  alt='Preview'
-                  className='mt-2 w-24 h-24 object-cover rounded-md border'
-                />
-              )}
+
+              {/* PREVIEW FILE LAMA */}
+              {form.foto &&
+                typeof form.foto === "string" &&
+                (form.foto.match(/\.(mp4|webm|ogg)$/i) ? (
+                  <video
+                    src={form.foto}
+                    controls
+                    className="mt-2 w-32 h-32 rounded-md border object-cover"
+                  />
+                ) : (
+                  <img
+                    src={form.foto}
+                    alt="Preview"
+                    className="mt-2 w-24 h-24 object-cover rounded-md border"
+                  />
+                ))}
+
+              {/* PREVIEW FILE BARU */}
+              {form.foto &&
+                typeof form.foto === "object" &&
+                (form.foto.type.startsWith("video/") ? (
+                  <video
+                    src={URL.createObjectURL(form.foto)}
+                    controls
+                    className="mt-2 w-32 h-32 rounded-md border object-cover"
+                  />
+                ) : (
+                  <img
+                    src={URL.createObjectURL(form.foto)}
+                    alt="Preview"
+                    className="mt-2 w-24 h-24 object-cover rounded-md border"
+                  />
+                ))}
             </div>
 
-            <div className='flex justify-end gap-2 mt-4'>
-              <Button type='button' variant='outline' onClick={onClose}>
+            <div className="flex justify-end gap-2 mt-4">
+              <Button type="button" variant="outline" onClick={onClose}>
                 Batal
               </Button>
               <Button disabled={loading}>
                 {loading
-                  ? 'Menyimpan...'
+                  ? "Menyimpan..."
                   : initialData
-                  ? 'Simpan Perubahan'
-                  : 'Tambah Data'}
+                    ? "Simpan Perubahan"
+                    : "Tambah Data"}
               </Button>
             </div>
           </div>
         </form>
       </DialogContent>
     </Dialog>
-  )
-}
+  );
+};
 
-export default AddDataModal
+export default AddDataModal;

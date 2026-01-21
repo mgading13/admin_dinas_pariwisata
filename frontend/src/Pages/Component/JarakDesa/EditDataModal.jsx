@@ -101,7 +101,7 @@ const EditDataModal = ({ open, onClose, initialData, refreshData }) => {
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="max-w-md">
+      <DialogContent className="w-full max-w-md max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>
             {initialData ? "Edit Jalur Desa" : "Tambah Jalur Desa"}
@@ -126,7 +126,7 @@ const EditDataModal = ({ open, onClose, initialData, refreshData }) => {
                 <SelectValue placeholder="Pilih Desa" />
               </SelectTrigger>
 
-              <SelectContent>
+              <SelectContent className="min-w-[var(--radix-select-trigger-width)]">
                 {desaList.map((item) => (
                   <SelectItem key={item.id} value={String(item.id)}>
                     {item.namaDesa}
@@ -148,7 +148,7 @@ const EditDataModal = ({ open, onClose, initialData, refreshData }) => {
               <SelectTrigger className="w-full h-10 border border-input bg-background rounded-md px-3 text-sm">
                 <SelectValue placeholder="Pilih Titik Kota" />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent className="min-w-[var(--radix-select-trigger-width)]">
                 <SelectItem className="text-md" value="PALU">
                   Palu
                 </SelectItem>
@@ -166,6 +166,7 @@ const EditDataModal = ({ open, onClose, initialData, refreshData }) => {
               onChange={handleChange}
               placeholder="Masukkan nama rumah makan"
               required
+              className="w-full resize-none break-all whitespace-pre-wrap overflow-x-hidden"
             />
           </div>
           <div className="flex flex-col gap-2">
@@ -176,6 +177,7 @@ const EditDataModal = ({ open, onClose, initialData, refreshData }) => {
               onChange={handleChange}
               placeholder="Masukkan nama rumah makan"
               required
+              className="w-full resize-none break-all whitespace-pre-wrap overflow-x-hidden"
             />
           </div>
           <div className="flex flex-col gap-2">
@@ -186,6 +188,7 @@ const EditDataModal = ({ open, onClose, initialData, refreshData }) => {
               onChange={handleChange}
               placeholder="Masukkan nama rumah makan"
               required
+              className="w-full resize-none break-all whitespace-pre-wrap overflow-x-hidden"
             />
           </div>
 

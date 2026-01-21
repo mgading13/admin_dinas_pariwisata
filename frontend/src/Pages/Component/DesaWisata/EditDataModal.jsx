@@ -34,64 +34,65 @@ const EditDataModal = ({ open, onClose, initialData, refreshData }) => {
     latitude: "",
     jenisDesa: "",
   });
-  
+
   // --- START LOGIKA DEBOUNCE ---
   const translateText = async (text, fieldTarget) => {
     if (!text || text.length < 3) return;
     try {
       const res = await axios.get(
-        `https://translate.googleapis.com/translate_a/single?client=gtx&sl=id&tl=en&dt=t&q=${encodeURI(text)}`
+        `https://translate.googleapis.com/translate_a/single?client=gtx&sl=id&tl=en&dt=t&q=${encodeURI(text)}`,
       );
-    // PERBAIKAN: Jangan cuma ambil [0][0][0]
-    // Kita looping semua potongan kalimat yang dipisah oleh titik/newline
+      // PERBAIKAN: Jangan cuma ambil [0][0][0]
+      // Kita looping semua potongan kalimat yang dipisah oleh titik/newline
       if (res.data && res.data[0]) {
         const fullTranslation = res.data[0]
           .map((item) => item[0]) // Ambil hasil translasinya saja
           .filter((item) => item !== null) // Buang yang kosong
           .join(" "); // Gabungkan kembali menjadi satu paragraf utuh
-      
+
         setForm((prev) => ({ ...prev, [fieldTarget]: fullTranslation }));
       }
     } catch (error) {
-        console.error("Translate error:", error);
-      }
+      console.error("Translate error:", error);
+    }
   };
 
   const debouncedTranslate = useCallback(
     debounce((text, fieldTarget) => {
       translateText(text, fieldTarget);
-    }, 1500), 
-    []
+    }, 1500),
+    [],
   );
   // --- END LOGIKA DEBOUNCE ---
 
   useEffect(() => {
     if (open) {
       setLoading(false);
-    if (initialData) {
-      setForm({
-        namaDesa_id: initialData.namaDesa_id || "",
-        namaDesa_en: initialData.namaDesa_en || "",
-        lokasi_id: initialData.lokasi_id || "",
-        lokasi_en: initialData.lokasi_en || "",
-        deskripsi_id: initialData.deskripsi_id || "",
-        deskripsi_en: initialData.deskripsi_en || "",
-        foto: initialData.foto || "",
-        longitude: initialData.longitude || "",
-        latitude: initialData.latitude || "",
-        jenisDesa: initialData.jenisDesa || "",
-      });
-    } else {
-      setForm({
-        namaDesa_id: "",
-        lokasi_id: "",
-        deskripsi_id: "",
-        foto: "",
-        longitude: "",
-        latitude: "",
-        jenisDesa: "",
-      });
-    }}
+      if (initialData) {
+        setForm({
+          namaDesa_id: initialData.namaDesa_id || "",
+          namaDesa_en: initialData.namaDesa_en || "",
+          lokasi_id: initialData.lokasi_id || "",
+          lokasi_en: initialData.lokasi_en || "",
+          deskripsi_id: initialData.deskripsi_id || "",
+          deskripsi_en: initialData.deskripsi_en || "",
+          foto: initialData.foto || "",
+          longitude: initialData.longitude || "",
+          latitude: initialData.latitude || "",
+          jenisDesa: initialData.jenisDesa || "",
+        });
+      } else {
+        setForm({
+          namaDesa_id: "",
+          lokasi_id: "",
+          deskripsi_id: "",
+          foto: "",
+          longitude: "",
+          latitude: "",
+          jenisDesa: "",
+        });
+      }
+    }
   }, [initialData, open]);
 
   const handleChange = (e) => {
@@ -115,7 +116,7 @@ const EditDataModal = ({ open, onClose, initialData, refreshData }) => {
     if (!initialData?.id) {
       toast.error("ID data tidak ditemukan!");
       return;
-    } 
+    }
     if (loading) return;
     setLoading(true);
     try {
@@ -123,7 +124,7 @@ const EditDataModal = ({ open, onClose, initialData, refreshData }) => {
       // OTOMATISASI: Mengisi field _en dengan nilai dari field _id
       formData.append("namaDesa_id", form.namaDesa_id);
       formData.append("namaDesa_en", form.namaDesa_en); // Otomatis sama
-      
+
       formData.append("lokasi_id", form.lokasi_id);
       formData.append("lokasi_en", form.lokasi_en); // Otomatis sama
 
@@ -154,8 +155,8 @@ const EditDataModal = ({ open, onClose, initialData, refreshData }) => {
       // Untuk melihat detail kenapa 400 Bad Request
       console.error("Detail Error Backend:", error.response?.data);
       toast.error("Gagal menyimpan data!");
-    } finally {-
-      setLoading(false); // Button kembali ke "Simpan Perubahan"
+    } finally {
+      -setLoading(false); // Button kembali ke "Simpan Perubahan"
     }
   };
 
@@ -248,21 +249,49 @@ const EditDataModal = ({ open, onClose, initialData, refreshData }) => {
             </div>
 
             <div className="flex flex-col gap-2">
-              <Label>Foto</Label>
+              <Label>Foto / Video</Label>
+
               <Input
                 name="foto"
                 type="file"
-                accept="image/*"
-                onChange={handleChange}
+                accept="image/*,video/*"
+                onChange={handlePhoto}
                 className="w-full"
               />
-              {form.foto && typeof form.foto === "string" && (
-                <img
-                  src={`http://localhost:3000${form.foto}`}
-                  alt="Preview"
-                  className="mt-2 w-24 h-24 object-cover rounded-md border"
-                />
-              )}
+
+              {/* PREVIEW FILE LAMA */}
+              {form.foto &&
+                typeof form.foto === "string" &&
+                (form.foto.match(/\.(mp4|webm|ogg)$/i) ? (
+                  <video
+                    src={`http://localhost:3000${form.foto}`}
+                    controls
+                    className="mt-2 w-32 h-32 rounded-md border object-cover"
+                  />
+                ) : (
+                  <img
+                    src={`http://localhost:3000${form.foto}`}
+                    alt="Preview"
+                    className="mt-2 w-24 h-24 object-cover rounded-md border"
+                  />
+                ))}
+
+              {/* PREVIEW FILE BARU */}
+              {form.foto &&
+                typeof form.foto === "object" &&
+                (form.foto.type.startsWith("video/") ? (
+                  <video
+                    src={URL.createObjectURL(form.foto)}
+                    controls
+                    className="mt-2 w-32 h-32 rounded-md border object-cover"
+                  />
+                ) : (
+                  <img
+                    src={URL.createObjectURL(form.foto)}
+                    alt="Preview"
+                    className="mt-2 w-24 h-24 object-cover rounded-md border"
+                  />
+                ))}
             </div>
 
             <div className="flex justify-end gap-2 mt-4">

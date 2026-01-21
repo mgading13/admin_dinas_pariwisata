@@ -181,7 +181,7 @@ const AddDataModal = ({ open, onClose, initialData, refreshData }) => {
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className='max-w-md'>
+      <DialogContent className="w-full max-w-md max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>
             {initialData ? 'Edit Data Wisata' : 'Tambah Data Wisata'}
@@ -198,6 +198,7 @@ const AddDataModal = ({ open, onClose, initialData, refreshData }) => {
               onChange={handleChange}
               placeholder='Masukkan nama wisata'
               required
+              className="w-full"
             />
           </div>
           <div className='flex flex-col gap-2'>
@@ -208,6 +209,7 @@ const AddDataModal = ({ open, onClose, initialData, refreshData }) => {
               onChange={handleChange}
               placeholder='Masukkan lokasi wisata'
               required
+              className="w-full"
             />
           </div>
           <div className='flex flex-col gap-2'>
@@ -218,6 +220,7 @@ const AddDataModal = ({ open, onClose, initialData, refreshData }) => {
               onChange={handleChange}
               placeholder='Tuliskan deskripsi tentang wisata...'
               required
+              className="w-full resize-none break-all whitespace-pre-wrap overflow-x-hidden"
             />
           </div>
 
@@ -229,6 +232,7 @@ const AddDataModal = ({ open, onClose, initialData, refreshData }) => {
               onChange={handleChange}
               placeholder='Masukkan Harga Paket Wisata'
               required
+              className="w-full"
             />
           </div>
 
@@ -240,27 +244,56 @@ const AddDataModal = ({ open, onClose, initialData, refreshData }) => {
               onChange={handleChange}
               placeholder='Masukkan Kontak Paket Wisata'
               required
+              className="w-full"
             />
           </div>
 
           {/* Foto */}
-          <div className='flex flex-col gap-2'>
-            <Label>Foto</Label>
-            <Input
-              name='media'
-              type='file'
-              accept='image/*'
-              onChange={handlePhoto}
-              required={!initialData}
-            />
-            {form.media && typeof form.media === 'string' && (
-              <img
-                src={form.media}
-                alt='Preview'
-                className='mt-2 w-24 h-24 object-cover rounded-md border'
+          <div className="flex flex-col gap-2">
+              <Label>Foto / Video</Label>
+
+              <Input
+                name="media"
+                type="file"
+                accept="image/*,video/*"
+                onChange={handlePhoto}
+                className="w-full"
               />
-            )}
-          </div>
+
+              {/* PREVIEW FILE LAMA */}
+              {form.media &&
+                typeof form.media === "string" &&
+                (form.foto.match(/\.(mp4|webm|ogg)$/i) ? (
+                  <video
+                    src={form.media}
+                    controls
+                    className="mt-2 w-32 h-32 rounded-md border object-cover"
+                  />
+                ) : (
+                  <img
+                    src={form.media}
+                    alt="Preview"
+                    className="mt-2 w-24 h-24 object-cover rounded-md border"
+                  />
+                ))}
+
+              {/* PREVIEW FILE BARU */}
+              {form.media &&
+                typeof form.media === "object" &&
+                (form.foto.type.startsWith("video/") ? (
+                  <video
+                    src={URL.createObjectURL(form.media)}
+                    controls
+                    className="mt-2 w-32 h-32 rounded-md border object-cover"
+                  />
+                ) : (
+                  <img
+                    src={URL.createObjectURL(form.media)}
+                    alt="Preview"
+                    className="mt-2 w-24 h-24 object-cover rounded-md border"
+                  />
+                ))}
+            </div>
 
           {/* Tombol Aksi */}
           <div className='flex justify-end gap-2 mt-4'>

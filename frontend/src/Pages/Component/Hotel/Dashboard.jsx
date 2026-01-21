@@ -96,12 +96,12 @@ function Dashboard() {
   const totalPages = Math.ceil(filteredData.length / itemsPerPage);
   const paginatedData = filteredData.slice(
     (currentPage - 1) * itemsPerPage,
-    currentPage * itemsPerPage
+    currentPage * itemsPerPage,
   );
 
   const handleEditData = (updatedData) => {
     setData((prev) =>
-      prev.map((d) => (d.id === updatedData.id ? updatedData : d))
+      prev.map((d) => (d.id === updatedData.id ? updatedData : d)),
     );
     toast.success("Data berhasil diperbarui.");
   };
@@ -167,8 +167,10 @@ function Dashboard() {
                 <TableHead>No</TableHead>
                 <TableHead>Nama Hotel</TableHead>
                 <TableHead>Lokasi</TableHead>
-                <TableHead>Jumlah Kamar</TableHead>
                 <TableHead>Kontak</TableHead>
+                <TableHead>Harga per Malam</TableHead>
+                <TableHead>Jumlah Kamar</TableHead>
+                <TableHead>Jumlah Tempat Tidur</TableHead>
                 <TableHead className="text-center">Aksi</TableHead>
               </TableRow>
             </TableHeader>
@@ -191,8 +193,12 @@ function Dashboard() {
                     </TableCell>
                     <TableCell>{item.nama_hotel}</TableCell>
                     <TableCell>{item.lokasi}</TableCell>
-                    <TableCell>{item.jumlah_kamar}</TableCell>
                     <TableCell>{item.telepon}</TableCell>
+                    <TableCell>
+                      Rp. {Number(item.harga).toLocaleString("id-ID")}
+                    </TableCell>
+                    <TableCell>{item.jumlah_kamar}</TableCell>
+                    <TableCell>{item.jumlah_tempatTidur}</TableCell>
 
                     <TableCell className="flex justify-center gap-2">
                       <Button
@@ -327,10 +333,10 @@ function Dashboard() {
                     <Label className="font-bold">Jumlah Kamar :</Label>
                     <p>{selectedData.jumlah_kamar}</p>
                   </div>
-                <div className="flex flex-col">
-                  <Label className="font-bold">Jumlah Tempat Tidur :</Label>
-                  <p>{selectedData.jumlah_tempatTidur}</p>
-                </div>
+                  <div className="flex flex-col">
+                    <Label className="font-bold">Jumlah Tempat Tidur :</Label>
+                    <p>{selectedData.jumlah_tempatTidur}</p>
+                  </div>
                 </div>
                 <div className="flex flex-col gap-3">
                   <div className="flex flex-col">
@@ -355,17 +361,20 @@ function Dashboard() {
                 </div>
               </div>
             )}
-            {selectedData && (
-              <img
-                src={
-                  selectedData.foto
-                    ? `http://localhost:3000${selectedData.foto}`
-                    : "/no-image.jpg"
-                }
-                alt={selectedData.nama_hotel}
-                className="w-full h-100 object-cover rounded-lg mt-2"
-              />
-            )}
+            {selectedData?.foto &&
+              (selectedData.foto.match(/\.(mp4|webm|ogg)$/i) ? (
+                <video
+                  src={`http://localhost:3000${selectedData.foto}`}
+                  controls
+                  className="w-full max-h-[400px] object-cover rounded-lg mt-2"
+                />
+              ) : (
+                <img
+                  src={`http://localhost:3000${selectedData.foto}`}
+                  alt={selectedData?.nama_hotel}
+                  className="w-full max-h-[400px] object-cover rounded-lg mt-2"
+                />
+              ))}
           </DialogContent>
         </Dialog>
       </div>

@@ -121,7 +121,7 @@ const AddDataModal = ({ open, onClose, initialData, refreshData }) => {
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className='max-w-md'>
+      <DialogContent className='w-full max-w-md max-h-[90vh] overflow-y-auto'>
         <DialogHeader>
           <DialogTitle>
             {initialData ? 'Edit Jalur Desa' : 'Tambah Jalur Desa'}
@@ -129,7 +129,6 @@ const AddDataModal = ({ open, onClose, initialData, refreshData }) => {
         </DialogHeader>
 
         <div className='space-y-4 mt-4'>
-          {/* Dropdown Kuliner */}
           <div className='flex flex-col gap-2'>
             <Label>Pilih Desa</Label>
 
@@ -146,7 +145,7 @@ const AddDataModal = ({ open, onClose, initialData, refreshData }) => {
                 <SelectValue placeholder='Pilih Desa' />
               </SelectTrigger>
 
-              <SelectContent>
+              <SelectContent className="min-w-[var(--radix-select-trigger-width)]" >
                 {desaList.map(item => (
                   <SelectItem key={item.id} value={String(item.id)}>
                     {item.namaDesa}
@@ -177,7 +176,7 @@ const AddDataModal = ({ open, onClose, initialData, refreshData }) => {
               >
                 <SelectValue placeholder='Pilih Titik Kota' />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent className='min-w-[var(--radix-select-trigger-width)]'>
                 <SelectItem value='PALU' disabled={usedCities.includes('PALU')}>
                   Palu {usedCities.includes('PALU') && '✓'}
                 </SelectItem>
@@ -204,6 +203,7 @@ const AddDataModal = ({ open, onClose, initialData, refreshData }) => {
               onChange={handleChange}
               placeholder='Masukkan jalur menuju desa'
               required
+              className="w-full resize-none break-all whitespace-pre-wrap overflow-x-hidden"
             />
           </div>
           <div className='flex flex-col gap-2'>
@@ -214,6 +214,7 @@ const AddDataModal = ({ open, onClose, initialData, refreshData }) => {
               onChange={handleChange}
               placeholder='Masukkan jalur menuju desa'
               required
+              className="w-full resize-none break-all whitespace-pre-wrap overflow-x-hidden"
             />
           </div>
           <div className='flex flex-col gap-2'>
@@ -224,6 +225,7 @@ const AddDataModal = ({ open, onClose, initialData, refreshData }) => {
               onChange={handleChange}
               placeholder='Masukkan jalur menuju desa'
               required
+              className="w-full resize-none break-all whitespace-pre-wrap overflow-x-hidden"
             />
           </div>
 

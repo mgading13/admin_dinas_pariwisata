@@ -4,6 +4,13 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
@@ -41,18 +48,16 @@ const EditDataModal = ({ open, onClose, initialData, refreshData }) => {
     if (initialData) {
       setForm({
         resto: initialData.resto || "",
-        lokasi: initialData.lokasi || "",
         link_gmaps: initialData.link_gmaps || "",
-        kulinerId: initialData.kulinerId || "",
-        foto: initialData.foto || "",
+        kulinerId: initialData.kulinerId
+          ? String(initialData.kulinerId) // ⭐ WAJIB
+          : "",
       });
     } else {
       setForm({
         resto: "",
-        lokasi: "",
         link_gmaps: "",
         kulinerId: "",
-        foto: "",
       });
     }
   }, [initialData, open]);
@@ -68,17 +73,15 @@ const EditDataModal = ({ open, onClose, initialData, refreshData }) => {
     try {
       const formData = new FormData();
       formData.append("resto", form.resto);
-      formData.append("lokasi", form.lokasi);
       formData.append("link_gmaps", form.link_gmaps);
       formData.append("kulinerId", form.kulinerId);
-      formData.append("foto", form.foto);
 
       const res = await axios.patch(
         `http://localhost:3000/api/rumahMakan/${initialData.id}`,
         formData,
         {
           headers: { "Content-Type": "multipart/form-data" },
-        }
+        },
       );
 
       toast.success("Data rumah makan berhasil ditambahkan!");
@@ -95,7 +98,7 @@ const EditDataModal = ({ open, onClose, initialData, refreshData }) => {
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="max-w-md">
+      <DialogContent className="w-full max-w-md max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>
             {initialData ? "Edit Data Kuliner" : "Tambah Data Kuliner"}
@@ -112,41 +115,39 @@ const EditDataModal = ({ open, onClose, initialData, refreshData }) => {
               onChange={handleChange}
               placeholder="Masukkan nama restoran"
               required
+              className="w-full"
             />
           </div>
 
           {/* Dropdown Kuliner */}
           <div className="flex flex-col gap-2">
             <Label>Pilih Jenis Makanan</Label>
-            <select
+            <Select
               name="kulinerId"
-              value={form.kulinerId}
-              onChange={handleChange}
-              className="border p-2 rounded-md"
+              value={form.kulinerId || ""}
+              onValueChange={(value) =>
+                handleChange({ target: { name: "kulinerId", value } })
+              }
               required
             >
-              <option value="">-- Pilih Makanan --</option>
-              {kulinerList.map((item) => (
-                <option key={item.id} value={item.id}>
-                  {item.nama_makanan}
-                </option>
-              ))}
-            </select>
+              <SelectTrigger className="w-full h-10 border border-input bg-background rounded-md px-3 text-sm">
+                <SelectValue placeholder="-- Pilih Makanan --" />
+              </SelectTrigger>
+
+              <SelectContent className="min-w-[var(--radix-select-trigger-width)]">
+                {kulinerList.map((item) => (
+                  <SelectItem
+                    key={item.id}
+                    value={String(item.id)} // ⚠️ HARUS string
+                    className="text-sm"
+                  >
+                    {item.nama_makanan}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
 
-          {/* Lokasi */}
-          <div className="flex flex-col gap-2">
-            <Label>Lokasi</Label>
-            <Input
-              name="lokasi"
-              value={form.lokasi}
-              onChange={handleChange}
-              placeholder="Masukkan lokasi restoran"
-              required
-            />
-          </div>
-
-          {/* Link Gmaps */}
           <div className="flex flex-col gap-2">
             <Label>Link Google Maps</Label>
             <Input
@@ -154,27 +155,9 @@ const EditDataModal = ({ open, onClose, initialData, refreshData }) => {
               value={form.link_gmaps}
               onChange={handleChange}
               placeholder="Tempelkan link Google Maps..."
+              required
+              className="w-full"
             />
-          </div>
-
-          {/* Foto */}
-          <div className="flex flex-col gap-2">
-            <Label>Foto</Label>
-            <Input
-              name="foto"
-              type="file"
-              accept="image/*"
-              onChange={handleChange}
-              required={!initialData}
-            />
-
-            {form.foto && typeof form.foto === "string" && (
-              <img
-                src={`http://localhost:3000${form.foto}`}
-                alt="Preview"
-                className="mt-2 w-24 h-24 object-cover rounded-md border"
-              />
-            )}
           </div>
 
           {/* Tombol */}
