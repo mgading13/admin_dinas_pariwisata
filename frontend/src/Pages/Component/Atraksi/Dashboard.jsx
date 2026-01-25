@@ -119,7 +119,7 @@ function Dashboard() {
   const handleDelete = async (id) => {
     try {
       await axios.delete(`http://localhost:3000/api/atraksi/${id}`);
-      toast.error("Data berhasil dihapus.");
+      toast.success("Data berhasil dihapus.");
       setData((prev) => prev.filter((d) => d.id !== id));
     } catch (err) {
       toast.error("Gagal menghapus data.");
@@ -358,7 +358,7 @@ function Dashboard() {
                   </div>
                   <div className="flex flex-col gap-1">
                     <Label className="font-bold">Deskripsi :</Label>
-                    <p className="max-w-[300px] max-h-[100px] overflow-y-auto whitespace-normal break-words">
+                    <p className="max-w-[300px] max-h-[100px] overflow-y-auto whitespace-normal break-words text-justify">
                       {selectedData.description_id}
                     </p>
                   </div>

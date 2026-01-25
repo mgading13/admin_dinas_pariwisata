@@ -193,7 +193,7 @@ function Dashboard() {
                     </TableCell>
                     <TableCell>{item.nama_wisata_id}</TableCell>
                     <TableCell>{item.lokasi_id}</TableCell>
-                    <TableCell className="max-w-[300px] max-h-[100px] overflow-y-auto whitespace-normal break-words">
+                    <TableCell className="max-w-[300px] max-h-[100px] overflow-y-auto whitespace-normal break-words text-justify">
                       {item.deskripsi_id}
                     </TableCell>
                     <TableCell>

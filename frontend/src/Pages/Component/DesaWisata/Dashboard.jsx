@@ -49,6 +49,7 @@ function Dashboard() {
   const [filterLokasi, setFilterLokasi] = useState("all");
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 5;
+  const [filterJenis, setFilterJenis] = useState("all");
 
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -89,9 +90,12 @@ function Dashboard() {
       const matchFilter =
         filterLokasi === "all" || item.lokasi_id === filterLokasi;
 
-      return matchSearch && matchFilter;
+      const matchJenis =
+        filterJenis === "all" || item.jenisDesa === filterJenis;
+
+      return matchSearch && matchFilter && matchJenis;
     });
-  }, [data, search, filterLokasi]);
+  }, [data, search, filterLokasi, filterJenis]);
 
   // 📄 Pagination
   const totalPages = Math.ceil(filteredData.length / itemsPerPage);
@@ -120,11 +124,18 @@ function Dashboard() {
 
   const formatJenisDesa = (value) => {
     if (!value) return "";
-    // Ubah DESA_WISATA menjadi ["DESA", "WISATA"] lalu Format Awal Huruf
-    return value
+
+    const formatted = value
       .split("_")
       .map((word) => word.charAt(0) + word.slice(1).toLowerCase())
       .join(" ");
+
+    // 🔁 Custom rename
+    if (formatted === "Desa Unggulan") {
+      return "Wisata Unggulan";
+    }
+
+    return formatted;
   };
 
   return (
@@ -137,7 +148,8 @@ function Dashboard() {
           </div>
 
           {/* 🔍 Search dan Filter */}
-          <div className="flex flex-col md:flex-row justify-between gap-3 mb-5">
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 mb-5">
+            {/* SEARCH — KIRI */}
             <Input
               placeholder="Cari berdasarkan nama atau lokasi..."
               value={search}
@@ -148,33 +160,57 @@ function Dashboard() {
               className="w-full md:w-1/3"
             />
 
-            <Select
-              value={filterLokasi}
-              onValueChange={(val) => {
-                setFilterLokasi(val);
-                setCurrentPage(1);
-              }}
-            >
-              <SelectTrigger className="w-full md:w-1/4">
-                <SelectValue placeholder="Filter Lokasi" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Semua Lokasi</SelectItem>
-                {[...new Set(data.map((d) => d.lokasi_id))].map(
-                  (lokasi, index) => (
-                    <SelectItem key={index} value={lokasi}>
-                      {lokasi}
-                    </SelectItem>
-                  ),
-                )}
-              </SelectContent>
-            </Select>
+            {/* FILTER — KANAN */}
+            <div className="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
+              <Select
+                value={filterLokasi}
+                onValueChange={(val) => {
+                  setFilterLokasi(val);
+                  setCurrentPage(1);
+                }}
+              >
+                <SelectTrigger className="w-full sm:w-48">
+                  <SelectValue placeholder="Filter Lokasi" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Semua Lokasi</SelectItem>
+                  {[...new Set(data.map((d) => d.lokasi_id))].map(
+                    (lokasi, index) => (
+                      <SelectItem key={index} value={lokasi}>
+                        {lokasi}
+                      </SelectItem>
+                    ),
+                  )}
+                </SelectContent>
+              </Select>
+
+              <Select
+                value={filterJenis}
+                onValueChange={(val) => {
+                  setFilterJenis(val);
+                  setCurrentPage(1);
+                }}
+              >
+                <SelectTrigger className="w-full sm:w-48">
+                  <SelectValue placeholder="Filter Jenis Desa" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Semua Jenis</SelectItem>
+                  {[...new Set(data.map((d) => d.jenisDesa))].map(
+                    (jenis, index) => (
+                      <SelectItem key={index} value={jenis}>
+                        {formatJenisDesa(jenis)}
+                      </SelectItem>
+                    ),
+                  )}
+                </SelectContent>
+              </Select>
+            </div>
           </div>
 
           {/* 📊 Tabel Data */}
           <div className="bg-white rounded-xl shadow-md overflow-hidden">
             <Table>
-              {/* <TableCaption>Data atraksi wisata di Sulawesi Tengah</TableCaption> */}
               <TableHeader>
                 <TableRow>
                   <TableHead>No</TableHead>
@@ -197,7 +233,7 @@ function Dashboard() {
                       {/* Tampilkan versi Indonesia (_id) di dashboard Admin */}
                       <TableCell>{item.namaDesa_id}</TableCell>
 
-                      <TableCell className="max-w-[300px] whitespace-normal break-words">
+                      <TableCell className="max-w-[300px] whitespace-normal break-words text-justify">
                         {item.deskripsi_id}
                       </TableCell>
 
@@ -257,7 +293,7 @@ function Dashboard() {
                               </AlertDialogTitle>
                               <AlertDialogDescription>
                                 Yakin ingin menghapus{" "}
-                                <strong>{item.namaDesa}</strong>?
+                                <strong>{item.namaDesa_id}</strong>?
                               </AlertDialogDescription>
                             </AlertDialogHeader>
                             <AlertDialogFooter>

@@ -189,7 +189,7 @@ function Dashboard() {
                     </TableCell>
                     <TableCell>{item.nama_makanan}</TableCell>
                     <TableCell>{item.lokasi}</TableCell>
-                    <TableCell className="max-w-[300px] max-h-[100px] overflow-y-auto whitespace-normal break-words">
+                    <TableCell className="max-w-[300px] max-h-[100px] overflow-y-auto whitespace-normal break-words text-justify">
                       {item.deskripsi_id}
                     </TableCell>
 
