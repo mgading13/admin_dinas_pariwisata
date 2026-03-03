@@ -80,7 +80,6 @@ function Dashboard() {
     }
   };
 
-  // 🧮 Filter dan pencarian
   const filteredData = useMemo(() => {
     return data.filter((item) => {
       const matchSearch =
@@ -92,12 +91,31 @@ function Dashboard() {
     });
   }, [data, search, filterLokasi]);
 
-  // 📄 Pagination
   const totalPages = Math.ceil(filteredData.length / itemsPerPage);
   const paginatedData = filteredData.slice(
     (currentPage - 1) * itemsPerPage,
     currentPage * itemsPerPage,
   );
+
+  const getYoutubeId = (url) => {
+    if (!url) return null;
+
+    try {
+      const urlObj = new URL(url);
+
+      if (urlObj.hostname === "youtu.be") {
+        return urlObj.pathname.slice(1);
+      }
+
+      if (urlObj.searchParams.get("v")) {
+        return urlObj.searchParams.get("v");
+      }
+
+      return null;
+    } catch {
+      return null;
+    }
+  };
 
   const handleEditData = (updatedData) => {
     setData((prev) =>
@@ -120,13 +138,11 @@ function Dashboard() {
   return (
     <SideBar>
       <div className="p-8 bg-gray-50 min-h-screen">
-        {/* Header */}
         <div className="flex justify-between items-center pt-10 mb-6">
           <h1 className="text-2xl font-bold">Daftar Hotel</h1>
           <Button onClick={() => setOpenAddModal(true)}>Tambah Data</Button>
         </div>
 
-        {/* Search */}
         <div className="mb-5 flex justify-between items-center">
           <Input
             placeholder="Cari berdasarkan nama hotel atau lokasi..."
@@ -159,7 +175,6 @@ function Dashboard() {
           </Select>
         </div>
 
-        {/* 📊 Tabel Data */}
         <div className="bg-white rounded-xl shadow-md overflow-hidden">
           <Table>
             <TableHeader>
@@ -223,7 +238,6 @@ function Dashboard() {
                         Edit
                       </Button>
 
-                      {/* Hapus */}
                       <AlertDialog>
                         <AlertDialogTrigger asChild>
                           <Button variant="destructive" size="sm">
@@ -267,7 +281,6 @@ function Dashboard() {
           </Table>
         </div>
 
-        {/* 📄 Pagination */}
         <div className="flex justify-end items-center gap-2 mt-4">
           <Button
             variant="outline"
@@ -290,14 +303,12 @@ function Dashboard() {
           </Button>
         </div>
 
-        {/* 🪄 Modal Tambah */}
         <AddDataModal
           open={openAddModal}
           onClose={() => setOpenAddModal(false)}
           refreshData={fetchData}
         />
 
-        {/* ✏️ Modal Edit */}
         <EditDataModal
           open={openEditModal}
           onClose={() => setOpenEditModal(false)}
@@ -306,75 +317,116 @@ function Dashboard() {
           refreshData={fetchData}
         />
 
-        {/* 👁️ Modal Detail */}
         <Dialog open={openDetailModal} onOpenChange={setOpenDetailModal}>
-          <DialogContent>
-            <DialogHeader>
-              {selectedData && (
-                <DialogTitle>
-                  Detail Hotel {selectedData.nama_hotel}
-                </DialogTitle>
-              )}
-            </DialogHeader>
-
+          <DialogContent className="max-w-4xl w-full">
             {selectedData && (
-              <div className="space-y-2 mt-3 flex justify-between gap-7 text-md">
-                <div className="flex flex-col gap-3">
-                  <div className="flex flex-col">
-                    <Label className="font-bold">Nama Hotel :</Label>
-                    <p>{selectedData.nama_hotel}</p>
-                  </div>
-                  <div className="flex flex-col">
-                    <Label className="font-bold">Lokasi :</Label>
-                    <p>{selectedData.lokasi}</p>
+              <>
+                <DialogHeader>
+                  <DialogTitle className="text-xl font-bold">
+                    Detail Hotel {selectedData.nama_hotel}
+                  </DialogTitle>
+                </DialogHeader>
+
+                <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-8 text-sm">
+                  <div className="flex flex-col gap-4">
+                    <div>
+                      <Label className="font-bold">Nama Hotel :</Label>
+                      <p>{selectedData.nama_hotel}</p>
+                    </div>
+
+                    <div>
+                      <Label className="font-bold">Lokasi :</Label>
+                      <p>{selectedData.lokasi}</p>
+                    </div>
+
+                    <div>
+                      <Label className="font-bold">Jumlah Kamar :</Label>
+                      <p>{selectedData.jumlah_kamar}</p>
+                    </div>
+
+                    <div>
+                      <Label className="font-bold">Jumlah Tempat Tidur :</Label>
+                      <p>{selectedData.jumlah_tempatTidur}</p>
+                    </div>
+
+                    <div>
+                      <Label className="font-bold">Harga per Malam :</Label>
+                      <p>
+                        Start from Rp{" "}
+                        {Number(selectedData.harga).toLocaleString("id-ID")}
+                      </p>
+                    </div>
                   </div>
 
-                  <div className="flex flex-col">
-                    <Label className="font-bold">Jumlah Kamar :</Label>
-                    <p>{selectedData.jumlah_kamar}</p>
-                  </div>
-                  <div className="flex flex-col">
-                    <Label className="font-bold">Jumlah Tempat Tidur :</Label>
-                    <p>{selectedData.jumlah_tempatTidur}</p>
+                  <div className="flex flex-col gap-4">
+                    <div>
+                      <Label className="font-bold">Website :</Label>
+                      {selectedData.website ? (
+                        <a
+                          href={selectedData.website}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-blue-600 hover:underline break-all"
+                        >
+                          {selectedData.website}
+                        </a>
+                      ) : (
+                        <p>-</p>
+                      )}
+                    </div>
+
+                    <div>
+                      <Label className="font-bold">Google Maps :</Label>
+                      {selectedData.link_gmaps ? (
+                        <a
+                          href={selectedData.link_gmaps}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-blue-600 hover:underline break-all"
+                        >
+                          Lihat Lokasi
+                        </a>
+                      ) : (
+                        <p>-</p>
+                      )}
+                    </div>
+
+                    <div>
+                      <Label className="font-bold">Kontak :</Label>
+                      <p>{selectedData.telepon || "-"}</p>
+                    </div>
+
+                    {/* PRIORITAS 1: FOTO / VIDEO LOKAL */}
+                    {selectedData.foto ? (
+                      selectedData.foto.match(/\.(mp4|webm|ogg)$/i) ? (
+                        <video
+                          src={`http://localhost:3000${selectedData.foto}`}
+                          controls
+                          className="w-full aspect-video object-cover rounded-lg mt-2"
+                        />
+                      ) : (
+                        <img
+                          src={`http://localhost:3000${selectedData.foto}`}
+                          alt={selectedData.nama_hotel}
+                          className="w-full aspect-video object-cover rounded-lg mt-2"
+                        />
+                      )
+                    ) : null}
+
+                    {!selectedData.foto && selectedData.link_video && (
+                      <iframe
+                        className="w-full aspect-video rounded-lg mt-2"
+                        src={`https://www.youtube.com/embed/${getYoutubeId(
+                          selectedData.link_video,
+                        )}`}
+                        title="YouTube video"
+                        allowFullScreen
+                      />
+                    )}
                   </div>
                 </div>
-                <div className="flex flex-col gap-3">
-                  <div className="flex flex-col">
-                    <Label className="font-bold">Harga per Malam</Label>
-                    <p>
-                      Start from Rp.{" "}
-                      {Number(selectedData.harga).toLocaleString("id-ID")}
-                    </p>
-                  </div>
-                  <div className="flex flex-col ">
-                    <Label className="font-bold">Link Website :</Label>
-                    <p>{selectedData.website}</p>
-                  </div>
-                  <div className="flex flex-col">
-                    <Label className="font-bold">Link Google Maps</Label>
-                    <p>{selectedData.link_gmaps}</p>
-                  </div>
-                  <div className="flex flex-col">
-                    <Label className="font-bold">Kontak</Label>
-                    <p>{selectedData.telepon}</p>
-                  </div>
-                </div>
-              </div>
+              </>
             )}
-            {selectedData?.foto &&
-              (selectedData.foto.match(/\.(mp4|webm|ogg)$/i) ? (
-                <video
-                  src={`http://localhost:3000${selectedData.foto}`}
-                  controls
-                  className="w-full max-h-[400px] object-cover rounded-lg mt-2"
-                />
-              ) : (
-                <img
-                  src={`http://localhost:3000${selectedData.foto}`}
-                  alt={selectedData?.nama_hotel}
-                  className="w-full max-h-[400px] object-cover rounded-lg mt-2"
-                />
-              ))}
           </DialogContent>
         </Dialog>
       </div>

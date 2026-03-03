@@ -8,27 +8,30 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { toast } from "sonner";
+import { Trash } from "lucide-react";
+
 import debounce from "lodash.debounce";
 
 const AddDataModal = ({ open, onClose, initialData, refreshData }) => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
+  const fileInputRef = useRef(null);
   const [form, setForm] = useState({
     nameEvent: "",
-    description: "", // Gunakan _id agar sinkron
+    description: "", 
     description_en: "",
-    location: "", // Gunakan _id agar sinkron
+    location: "", 
     location_en: "",
     startdate: "",
     enddate: "",
     foto: "",
+    link_video: "",
   });
 
-  // --- LOGIKA DEBOUNCE TRANSLATE ---
   const translateText = async (text, fieldTarget) => {
     if (!text || text.trim().length < 3) return;
     try {
@@ -51,7 +54,6 @@ const AddDataModal = ({ open, onClose, initialData, refreshData }) => {
     [],
   );
 
-  // --- END LOGIKA DEBOUNCE ---
 
   useEffect(() => {
     if (initialData) {
@@ -64,6 +66,7 @@ const AddDataModal = ({ open, onClose, initialData, refreshData }) => {
         enddate: initialData.enddate?.split("T")[0] || "",
         location: initialData.location_id || "",
         location_en: initialData.location_en || "",
+        link_video: initialData.link_video || "",
       });
     } else {
       setForm({
@@ -75,30 +78,93 @@ const AddDataModal = ({ open, onClose, initialData, refreshData }) => {
         enddate: "",
         location: "",
         location_en: "",
+        link_video: "",
       });
     }
   }, [initialData, open]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setForm({ ...form, [name]: value });
 
-    // TRIGGER TRANSLATE OTOMATIS
     if (name === "description") {
       debouncedTranslate(value, "description_en");
     }
+
     if (name === "location") {
       debouncedTranslate(value, "location_en");
     }
+
+    if (name === "link_video") {
+      setForm({
+        ...form,
+        link_video: value,
+        foto: "",
+      });
+      return;
+    }
+
+    setForm((prev) => ({ ...prev, [name]: value }));
   };
 
   const handlePhoto = (e) => {
     const file = e.target.files[0];
-    setForm({ ...form, foto: file });
+    if (file) {
+      setForm({
+        ...form,
+        foto: file,
+        link_video: "",
+      });
+    }
+  };
+
+  const handleRemoveFile = async () => {
+    if (form.foto && typeof form.foto === "object") {
+      setForm((prev) => ({
+        ...prev,
+        foto: "",
+      }));
+
+      if (fileInputRef.current) {
+        fileInputRef.current.value = "";
+      }
+
+      return;
+    }
+
+    try {
+      await axios.delete(
+        `http://localhost:3000/api/atraksi/foto/${initialData.id}`,
+      );
+
+      setForm((prev) => ({
+        ...prev,
+        foto: "",
+      }));
+
+      if (fileInputRef.current) {
+        fileInputRef.current.value = "";
+      }
+
+      toast.success("File berhasil dihapus");
+    } catch (error) {
+      console.error("❌ Gagal menghapus file:", error);
+      toast.error("Gagal menghapus file");
+    }
+  };
+
+  const handleRemoveLink = () => {
+    setForm({
+      ...form,
+      link_video: "",
+    });
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (!form.foto && !form.link_video) {
+      toast.warning("Harap isi salah satu antara Foto/Video atau Link Video ");
+      return;
+    }
     setLoading(true);
     try {
       const formData = new FormData();
@@ -112,8 +178,8 @@ const AddDataModal = ({ open, onClose, initialData, refreshData }) => {
       if (form.foto && typeof form.foto === "object") {
         formData.append("foto", form.foto);
       }
+      formData.append("link_video", form.link_video);
 
-      // 🟢 Mode Tambah
       const res = await axios.post(
         "http://localhost:3000/api/atraksi/insert",
         formData,
@@ -207,54 +273,108 @@ const AddDataModal = ({ open, onClose, initialData, refreshData }) => {
               <Label>Foto / Video</Label>
 
               <Input
+                ref={fileInputRef}
                 name="foto"
                 type="file"
                 accept="image/*,video/*"
                 onChange={handlePhoto}
-                required={!initialData}
+                disabled={!!form.link_video}
                 className="w-full"
               />
 
-              {/* Preview file lama */}
-              {form.foto &&
-                typeof form.foto === "string" &&
-                (form.foto.match(/\.(mp4|webm|ogg)$/i) ? (
-                  <video
-                    src={form.foto}
-                    controls
-                    className="mt-2 w-32 h-32 rounded-md border object-cover"
-                  />
-                ) : (
-                  <img
-                    src={form.foto}
-                    alt="Preview"
-                    className="mt-2 w-24 h-24 object-cover rounded-md border"
-                  />
-                ))}
+              {/* PREVIEW FILE */}
+              {form.foto && (
+                <div className="relative w-fit mt-2">
+                  {typeof form.foto === "string" ? (
+                    form.foto.match(/\.(mp4|webm|ogg)$/i) ? (
+                      <video
+                        src={`http://localhost:3000${form.foto}`}
+                        controls
+                        className="w-32 h-32 rounded-md border object-cover"
+                      />
+                    ) : (
+                      <img
+                        src={`http://localhost:3000${form.foto}`}
+                        alt="Preview"
+                        className="w-32 h-32 object-cover rounded-md border"
+                      />
+                    )
+                  ) : form.foto.type.startsWith("video/") ? (
+                    <video
+                      src={URL.createObjectURL(form.foto)}
+                      controls
+                      className="w-32 h-32 rounded-md border object-cover"
+                    />
+                  ) : (
+                    <img
+                      src={URL.createObjectURL(form.foto)}
+                      alt="Preview"
+                      className="w-32 h-32 object-cover rounded-md border"
+                    />
+                  )}
 
-              {/* Preview file baru */}
-              {form.foto &&
-                typeof form.foto === "object" &&
-                (form.foto.type.startsWith("video/") ? (
-                  <video
-                    src={URL.createObjectURL(form.foto)}
-                    controls
-                    className="mt-2 w-32 h-32 rounded-md border object-cover"
-                  />
-                ) : (
-                  <img
-                    src={URL.createObjectURL(form.foto)}
-                    alt="Preview"
-                    className="mt-2 w-24 h-24 object-cover rounded-md border"
-                  />
-                ))}
+                  <button
+                    type="button"
+                    onClick={handleRemoveFile}
+                    className="
+    absolute -top-2 -right-2
+    flex items-center justify-center
+    w-7 h-7
+    rounded-full
+    bg-red-500
+    text-white
+    shadow-md
+    hover:bg-red-600
+    hover:scale-110
+    transition-all duration-200
+  "
+                  >
+                    <Trash size={14} />
+                  </button>
+                </div>
+              )}
+            </div>
+
+            <div className="flex flex-col gap-2">
+              <Label>Link Video</Label>
+
+              <div className="flex gap-2">
+                <Input
+                  name="link_video"
+                  value={form.link_video}
+                  onChange={handleChange}
+                  placeholder="Masukkan link YouTube"
+                  disabled={!!form.foto}
+                  className="w-full"
+                />
+
+                {form.link_video && (
+                  <button
+                    type="button"
+                    onClick={handleRemoveLink}
+                    className="
+      flex items-center justify-center
+      w-9 h-9
+      rounded-md
+      bg-red-500
+      text-white
+      shadow-md
+      hover:bg-red-600
+      hover:scale-105
+      transition-all duration-200
+    "
+                  >
+                    <Trash size={16} />
+                  </button>
+                )}
+              </div>
             </div>
 
             <div className="flex justify-end gap-2 mt-4">
               <Button type="button" variant="outline" onClick={onClose}>
                 Batal
               </Button>
-              <Button onClick={handleSubmit}>
+              <Button type="submit" disabled={loading}>
                 {initialData ? "Simpan Perubahan" : "Tambah Data"}
               </Button>
             </div>

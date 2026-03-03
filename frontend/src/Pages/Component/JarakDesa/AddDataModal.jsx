@@ -67,7 +67,6 @@ const AddDataModal = ({ open, onClose, initialData, refreshData }) => {
       .catch(() => setExistingRoutes([]));
   }, [form.desaId]);
 
-  // Set initial data jika mode edit
   useEffect(() => {
     if (initialData) {
       setForm({
@@ -259,7 +258,6 @@ const AddDataModal = ({ open, onClose, initialData, refreshData }) => {
             />
           </div>
 
-          {/* Tombol */}
           <div className="flex justify-end gap-2 mt-4">
             <Button type="button" variant="outline" onClick={onClose}>
               Batal

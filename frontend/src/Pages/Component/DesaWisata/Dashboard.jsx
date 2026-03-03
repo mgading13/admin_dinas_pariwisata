@@ -53,6 +53,7 @@ function Dashboard() {
 
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [selectedVideo, setSelectedVideo] = useState(null);
 
   const fetchData = async () => {
     setLoading(true);
@@ -80,7 +81,6 @@ function Dashboard() {
     }
   };
 
-  // 🧮 Filter dan pencarian
   const filteredData = useMemo(() => {
     return data.filter((item) => {
       const matchSearch =
@@ -97,13 +97,31 @@ function Dashboard() {
     });
   }, [data, search, filterLokasi, filterJenis]);
 
-  // 📄 Pagination
   const totalPages = Math.ceil(filteredData.length / itemsPerPage);
   const paginatedData = filteredData.slice(
     (currentPage - 1) * itemsPerPage,
     currentPage * itemsPerPage,
   );
 
+  const getYoutubeId = (url) => {
+    if (!url) return null;
+
+    try {
+      const urlObj = new URL(url);
+
+      if (urlObj.hostname === "youtu.be") {
+        return urlObj.pathname.slice(1);
+      }
+
+      if (urlObj.searchParams.get("v")) {
+        return urlObj.searchParams.get("v");
+      }
+
+      return null;
+    } catch {
+      return null;
+    }
+  };
   const handleEditData = (updatedData) => {
     setData((prev) =>
       prev.map((d) => (d.id === updatedData.id ? updatedData : d)),
@@ -147,9 +165,7 @@ function Dashboard() {
             <Button onClick={() => setOpenAddModal(true)}>Tambah Data</Button>
           </div>
 
-          {/* 🔍 Search dan Filter */}
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 mb-5">
-            {/* SEARCH — KIRI */}
             <Input
               placeholder="Cari berdasarkan nama atau lokasi..."
               value={search}
@@ -160,7 +176,6 @@ function Dashboard() {
               className="w-full md:w-1/3"
             />
 
-            {/* FILTER — KANAN */}
             <div className="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
               <Select
                 value={filterLokasi}
@@ -208,7 +223,6 @@ function Dashboard() {
             </div>
           </div>
 
-          {/* 📊 Tabel Data */}
           <div className="bg-white rounded-xl shadow-md overflow-hidden">
             <Table>
               <TableHeader>
@@ -230,7 +244,6 @@ function Dashboard() {
                         {(currentPage - 1) * itemsPerPage + index + 1}
                       </TableCell>
 
-                      {/* Tampilkan versi Indonesia (_id) di dashboard Admin */}
                       <TableCell>{item.namaDesa_id}</TableCell>
 
                       <TableCell className="max-w-[300px] whitespace-normal break-words text-justify">
@@ -242,22 +255,67 @@ function Dashboard() {
                       <TableCell>{formatJenisDesa(item.jenisDesa)}</TableCell>
 
                       <TableCell>
-                        {item.foto &&
-                          (item.foto.match(/\.(mp4|webm|ogg)$/i) ? (
-                            <video
-                              src={`http://localhost:3000${item.foto}`}
-                              className="w-16 h-16 object-cover rounded-lg border"
-                              muted
-                              playsInline
-                              preload="metadata"
-                            />
-                          ) : (
-                            <img
-                              src={`http://localhost:3000${item.foto}`}
-                              alt={item.namaDesa}
-                              className="w-16 h-16 object-cover rounded-lg border"
-                            />
-                          ))}
+                        {(() => {
+                          if (item.foto) {
+                            // VIDEO LOKAL
+                            if (item.foto.match(/\.(mp4|webm|ogg)$/i)) {
+                              return (
+                                <div
+                                  className="relative cursor-pointer w-24 aspect-video"
+                                  onClick={() =>
+                                    setSelectedVideo(
+                                      `http://localhost:3000${item.foto}`,
+                                    )
+                                  }
+                                >
+                                  <video
+                                    src={`http://localhost:3000${item.foto}`}
+                                    className="w-full h-full object-cover rounded-lg border"
+                                    preload="metadata"
+                                  />
+
+                                  <div className="absolute inset-0 flex items-center justify-center bg-black/30 rounded-lg text-white">
+                                    ▶
+                                  </div>
+                                </div>
+                              );
+                            }
+
+                            return (
+                              <div className="relative w-24 aspect-video">
+                                <img
+                                  src={`http://localhost:3000${item.foto}`}
+                                  alt={item.namaDesa_id}
+                                  className="w-full h-full object-cover rounded-lg border"
+                                />
+                              </div>
+                            );
+                          }
+
+                          const videoId = getYoutubeId(item.link_video);
+
+                          if (videoId) {
+                            return (
+                              <div
+                                className="relative cursor-pointer w-24 aspect-video"
+                                onClick={() =>
+                                  setSelectedVideo(item.link_video)
+                                }
+                              >
+                                <img
+                                  src={`https://img.youtube.com/vi/${videoId}/hqdefault.jpg`}
+                                  className="w-full h-full object-cover rounded-lg border"
+                                />
+
+                                <div className="absolute inset-0 flex items-center justify-center bg-black/30 rounded-lg text-white">
+                                  ▶
+                                </div>
+                              </div>
+                            );
+                          }
+
+                          return null;
+                        })()}
                       </TableCell>
 
                       <TableCell className="flex justify-center gap-2">
@@ -323,7 +381,6 @@ function Dashboard() {
             </Table>
           </div>
 
-          {/* 📄 Pagination */}
           <div className="flex justify-end items-center gap-2 mt-4">
             <Button
               variant="outline"
@@ -346,14 +403,12 @@ function Dashboard() {
             </Button>
           </div>
 
-          {/* 🪄 Modal Tambah Data */}
           <AddDataModal
             open={openAddModal}
             onClose={() => setOpenAddModal(false)}
             refreshData={fetchData}
           />
 
-          {/* ✏️ Modal Edit Data */}
           <EditDataModal
             open={openEditModal}
             onClose={() => setOpenEditModal(false)}
@@ -362,58 +417,106 @@ function Dashboard() {
             refreshData={fetchData}
           />
 
-          {/* 👁️ Modal Detail Data */}
           <Dialog open={openDetailModal} onOpenChange={setOpenDetailModal}>
             <DialogContent>
-              <DialogHeader>
-                <DialogTitle>Detail Desa Wisata</DialogTitle>
-              </DialogHeader>
               {selectedData && (
-                <div className="space-y-2 mt-3 flex justify-between gap-7 text-md">
-                  <div className="flex flex-col gap-3">
-                    <div className="flex flex-col">
-                      <Label className="font-bold">Nama Desa :</Label>
-                      <p>{selectedData.namaDesa_id}</p>
-                    </div>
-                    <div className="flex flex-col">
-                      <Label className="font-bold">Deskripsi :</Label>
-                      <p className="text-justify">
-                        {selectedData.deskripsi_id}
-                      </p>
-                    </div>
-                    <div className="flex flex-col">
-                      <Label className="font-bold">Lokasi :</Label>
-                      <p>{selectedData.lokasi_id}</p>
-                    </div>
-                    <div className="flex flex-col">
-                      <Label className="font-bold">Jenis Desa :</Label>
-                      <p>{formatJenisDesa(selectedData.jenisDesa)}</p>
-                    </div>
-                    <div className="flex flex-col">
-                      <Label className="font-bold">Longitude :</Label>
-                      <p>{selectedData.longitude}</p>
-                    </div>
-                    <div className="flex flex-col">
-                      <Label className="font-bold">Latitude :</Label>
-                      <p>{selectedData.longitude}</p>
+                <>
+                  <DialogHeader>
+                    <DialogTitle>Detail Desa Wisata</DialogTitle>
+                  </DialogHeader>
+
+                  <div className="space-y-2 mt-3 flex justify-between gap-7 text-md">
+                    <div className="flex flex-col gap-3">
+                      <div>
+                        <Label className="font-bold">Nama Desa :</Label>
+                        <p>{selectedData.namaDesa_id}</p>
+                      </div>
+
+                      <div>
+                        <Label className="font-bold">Deskripsi :</Label>
+                        <p className="text-justify">
+                          {selectedData.deskripsi_id}
+                        </p>
+                      </div>
+
+                      <div>
+                        <Label className="font-bold">Lokasi :</Label>
+                        <p>{selectedData.lokasi_id}</p>
+                      </div>
+
+                      <div>
+                        <Label className="font-bold">Jenis Desa :</Label>
+                        <p>{formatJenisDesa(selectedData.jenisDesa)}</p>
+                      </div>
+
+                      <div>
+                        <Label className="font-bold">Longitude :</Label>
+                        <p>{selectedData.longitude}</p>
+                      </div>
+
+                      <div>
+                        <Label className="font-bold">Latitude :</Label>
+                        <p>{selectedData.latitude}</p>
+                      </div>
                     </div>
                   </div>
+
+                  {selectedData.foto ? (
+                    selectedData.foto.match(/\.(mp4|webm|ogg)$/i) ? (
+                      <video
+                        src={`http://localhost:3000${selectedData.foto}`}
+                        controls
+                        className="w-full aspect-video object-cover rounded-lg mt-2"
+                      />
+                    ) : (
+                      <img
+                        src={`http://localhost:3000${selectedData.foto}`}
+                        alt={selectedData.namaDesa_id}
+                        className="w-full aspect-video object-cover rounded-lg mt-2"
+                      />
+                    )
+                  ) : selectedData.link_video ? (
+                    <iframe
+                      className="w-full aspect-video rounded-lg mt-2"
+                      src={`https://www.youtube.com/embed/${getYoutubeId(
+                        selectedData.link_video,
+                      )}`}
+                      title="YouTube video"
+                      allowFullScreen
+                    />
+                  ) : null}
+                </>
+              )}
+            </DialogContent>
+          </Dialog>
+          <Dialog
+            open={!!selectedVideo}
+            onOpenChange={() => setSelectedVideo(null)}
+          >
+            <DialogContent className="max-w-5xl w-full">
+              <DialogHeader>
+                <DialogTitle>Preview Video</DialogTitle>
+              </DialogHeader>
+
+              {selectedVideo && (
+                <div className="w-full aspect-video">
+                  {selectedVideo.includes("youtube.com") ||
+                  selectedVideo.includes("youtu.be") ? (
+                    <iframe
+                      src={`https://www.youtube.com/embed/${getYoutubeId(selectedVideo)}`}
+                      allowFullScreen
+                      className="w-full h-full rounded-lg"
+                    />
+                  ) : (
+                    <video
+                      src={selectedVideo}
+                      controls
+                      autoPlay
+                      className="w-full h-full rounded-lg"
+                    />
+                  )}
                 </div>
               )}
-              {selectedData?.foto &&
-                (selectedData.foto.match(/\.(mp4|webm|ogg)$/i) ? (
-                  <video
-                    src={`http://localhost:3000${selectedData.foto}`}
-                    controls
-                    className="w-full max-h-[400px] object-cover rounded-lg mt-2"
-                  />
-                ) : (
-                  <img
-                    src={`http://localhost:3000${selectedData.foto}`}
-                    alt={selectedData?.namaDesa_id}
-                    className="w-full max-h-[400px] object-cover rounded-lg mt-2"
-                  />
-                ))}
             </DialogContent>
           </Dialog>
         </div>

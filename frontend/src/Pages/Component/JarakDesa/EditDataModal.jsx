@@ -30,7 +30,6 @@ const EditDataModal = ({ open, onClose, initialData, refreshData }) => {
     desaId: "",
   });
 
-  // Ambil data kuliner untuk dropdown
   useEffect(() => {
     async function fetchDesa() {
       try {
@@ -43,7 +42,6 @@ const EditDataModal = ({ open, onClose, initialData, refreshData }) => {
     fetchDesa();
   }, []);
 
-  // Set initial data jika mode edit
   useEffect(() => {
     if (initialData) {
       setForm({
@@ -109,7 +107,6 @@ const EditDataModal = ({ open, onClose, initialData, refreshData }) => {
         </DialogHeader>
 
         <div className="space-y-4 mt-4">
-          {/* Dropdown Kuliner */}
           <div className="flex flex-col gap-2">
             <Label>Pilih Desa</Label>
 
@@ -192,7 +189,6 @@ const EditDataModal = ({ open, onClose, initialData, refreshData }) => {
             />
           </div>
 
-          {/* Tombol */}
           <div className="flex justify-end gap-2 mt-4">
             <Button type="button" variant="outline" onClick={onClose}>
               Batal

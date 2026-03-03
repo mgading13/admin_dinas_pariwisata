@@ -79,7 +79,6 @@ function Dashboard() {
     }
   };
 
-  // 🧮 Filter dan pencarian
   const filteredData = useMemo(() => {
     return data.filter((item) => {
       return item.resto?.toLowerCase().includes(search.toLowerCase());
@@ -90,12 +89,12 @@ function Dashboard() {
   const totalPages = Math.ceil(filteredData.length / itemsPerPage);
   const paginatedData = filteredData.slice(
     (currentPage - 1) * itemsPerPage,
-    currentPage * itemsPerPage
+    currentPage * itemsPerPage,
   );
 
   const handleEditData = (updatedData) => {
     setData((prev) =>
-      prev.map((d) => (d.id === updatedData.id ? updatedData : d))
+      prev.map((d) => (d.id === updatedData.id ? updatedData : d)),
     );
     toast.success("Data berhasil diperbarui.");
   };
@@ -114,13 +113,11 @@ function Dashboard() {
   return (
     <SideBar>
       <div className="p-8 bg-gray-50 min-h-screen">
-        {/* Header */}
         <div className="flex justify-between items-center pt-10 mb-6">
           <h1 className="text-2xl font-bold">Daftar Rumah Makan</h1>
           <Button onClick={() => setOpenAddModal(true)}>Tambah Data</Button>
         </div>
 
-        {/* Search */}
         <div className="mb-5 flex justify-between items-center">
           <Input
             placeholder="Cari berdasarkan nama makanan"
@@ -131,29 +128,8 @@ function Dashboard() {
             }}
             className="w-full md:w-1/3"
           />
-
-          {/* <Select
-            value={filterLokasi}
-            onValueChange={(val) => {
-              setFilterLokasi(val);
-              setCurrentPage(1);
-            }}
-          >
-            <SelectTrigger className="w-full md:w-1/4">
-              <SelectValue placeholder="Filter Lokasi" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">Semua Lokasi</SelectItem>
-              {[...new Set(data.map((d) => d.lokasi))].map((lokasi, index) => (
-                <SelectItem key={lokasi || index} value={lokasi || "unknown"}>
-                  {lokasi || "Tidak diketahui"}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select> */}
         </div>
 
-        {/* 📊 Tabel Data */}
         <div className="bg-white rounded-xl shadow-md overflow-hidden">
           <Table>
             <TableHeader>
@@ -216,7 +192,6 @@ function Dashboard() {
                         Edit
                       </Button>
 
-                      {/* Hapus */}
                       <AlertDialog>
                         <AlertDialogTrigger asChild>
                           <Button variant="destructive" size="sm">
@@ -260,7 +235,6 @@ function Dashboard() {
           </Table>
         </div>
 
-        {/* 📄 Pagination */}
         <div className="flex justify-end items-center gap-2 mt-4">
           <Button
             variant="outline"
@@ -283,14 +257,12 @@ function Dashboard() {
           </Button>
         </div>
 
-        {/* 🪄 Modal Tambah */}
         <AddDataModal
           open={openAddModal}
           onClose={() => setOpenAddModal(false)}
           refreshData={fetchData}
         />
 
-        {/* ✏️ Modal Edit */}
         <EditDataModal
           open={openEditModal}
           onClose={() => setOpenEditModal(false)}
@@ -299,7 +271,6 @@ function Dashboard() {
           refreshData={fetchData}
         />
 
-        {/* 👁️ Modal Detail */}
         <Dialog open={openDetailModal} onOpenChange={setOpenDetailModal}>
           <DialogContent>
             {selectedData && (

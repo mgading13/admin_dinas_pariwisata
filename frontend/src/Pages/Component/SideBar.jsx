@@ -71,7 +71,6 @@ export default function Sidebar({ children }) {
   };
 
   const isActive = (path) => location.pathname === path;
-  // Mendapatkan inisial nama
   const getInitials = (name) => {
     if (!name) return "A";
     return name
@@ -81,7 +80,6 @@ export default function Sidebar({ children }) {
       .toUpperCase();
   };
 
-  // Mengatur warna avatar berdasarkan gender
   const getAvatarColor = (gender) => {
     switch (gender?.toLowerCase()) {
       case "laki-laki":
@@ -95,14 +93,11 @@ export default function Sidebar({ children }) {
 
   return (
     <div className="flex min-h-screen bg-gray-100">
-      {/* SIDEBAR (Desktop) */}
       <aside className="hidden md:flex flex-col w-64 bg-white border-r shadow-sm">
-        {/* Header */}
         <div className="h-16 flex items-center justify-center border-b">
           <h1 className="text-xl font-bold text-gray-800">Admin Dashboard</h1>
         </div>
 
-        {/* Scrollable Menu */}
         <ScrollArea className="flex-1 px-4 py-6">
           <nav className="space-y-2">
             <Link
@@ -157,7 +152,7 @@ export default function Sidebar({ children }) {
                     : "text-sky-500"
                 }`}
               />
-              Jarak Desa
+              Jalur Desa
             </Link>
             <Link
               to="/admin/atraksi"
@@ -248,7 +243,6 @@ export default function Sidebar({ children }) {
           </nav>
         </ScrollArea>
 
-        {/* Profil Pengguna */}
         <div className="border-t p-4">
           <DateTimeWidget />
 
@@ -291,7 +285,6 @@ export default function Sidebar({ children }) {
         </div>
       </aside>
 
-      {/* MOBILE NAVBAR */}
       <header className="md:hidden fixed top-0 left-0 right-0 z-50 bg-white border-b flex items-center justify-between px-4 h-14 shadow-sm">
         <h1 className="text-lg font-semibold text-gray-800">Admin Panel</h1>
         <Sheet open={open} onOpenChange={setOpen}>
@@ -360,7 +353,7 @@ export default function Sidebar({ children }) {
                           : "text-sky-500"
                       }`}
                     />
-                    Jarak Desa
+                    Jalur Desa
                   </Link>
                   <Link
                     to="/admin/atraksi"
@@ -440,7 +433,6 @@ export default function Sidebar({ children }) {
                 </nav>
               </ScrollArea>
 
-              {/* Profil & Logout di mobile */}
               <div className="border-t p-4">
                 <DateTimeWidget />
                 <DropdownMenu>
@@ -491,10 +483,8 @@ export default function Sidebar({ children }) {
         </Sheet>
       </header>
 
-      {/* KONTEN UTAMA */}
       <main className="flex-1 overflow-y-auto">{children}</main>
 
-      {/* Profil Modal */}
       <ProfilModal
         open={openProfil}
         onOpenChange={setOpenProfil}

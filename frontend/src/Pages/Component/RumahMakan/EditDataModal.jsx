@@ -119,7 +119,6 @@ const EditDataModal = ({ open, onClose, initialData, refreshData }) => {
             />
           </div>
 
-          {/* Dropdown Kuliner */}
           <div className="flex flex-col gap-2">
             <Label>Pilih Jenis Makanan</Label>
             <Select
@@ -160,7 +159,6 @@ const EditDataModal = ({ open, onClose, initialData, refreshData }) => {
             />
           </div>
 
-          {/* Tombol */}
           <div className="flex justify-end gap-2 mt-4">
             <Button type="button" variant="outline" onClick={onClose}>
               Batal

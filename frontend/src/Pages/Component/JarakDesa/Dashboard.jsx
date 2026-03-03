@@ -93,7 +93,6 @@ function Dashboard() {
     });
   }, [data, desaList]);
 
-  // 🧮 Filter dan pencarian
   const filteredData = useMemo(() => {
     return mergedData.filter((item) => {
       const matchSearch = item.titikKota
@@ -107,7 +106,6 @@ function Dashboard() {
     });
   }, [mergedData, search, filterDesa]);
 
-  // 📄 Pagination
   const totalPages = Math.ceil(filteredData.length / itemsPerPage);
   const paginatedData = filteredData.slice(
     (currentPage - 1) * itemsPerPage,
@@ -181,7 +179,6 @@ function Dashboard() {
           </Select>
         </div>
 
-        {/* 📊 Tabel Data */}
         <div className="bg-white rounded-xl shadow-md overflow-hidden">
           <Table>
             <TableHeader>
@@ -292,7 +289,6 @@ function Dashboard() {
           </Table>
         </div>
 
-        {/* 📄 Pagination */}
         <div className="flex justify-end items-center gap-2 mt-4">
           <Button
             variant="outline"
@@ -315,14 +311,12 @@ function Dashboard() {
           </Button>
         </div>
 
-        {/* 🪄 Modal Tambah */}
         <AddDataModal
           open={openAddModal}
           onClose={() => setOpenAddModal(false)}
           refreshData={fetchData}
         />
 
-        {/* ✏️ Modal Edit */}
         <EditDataModal
           open={openEditModal}
           onClose={() => setOpenEditModal(false)}
@@ -331,7 +325,6 @@ function Dashboard() {
           refreshData={fetchData}
         />
 
-        {/* 👁️ Modal Detail */}
         <Dialog open={openDetailModal} onOpenChange={setOpenDetailModal}>
           <DialogContent>
             {selectedData && (

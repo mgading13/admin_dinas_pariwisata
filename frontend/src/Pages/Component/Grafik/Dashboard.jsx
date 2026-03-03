@@ -106,9 +106,6 @@ export default function Dashboard () {
     }
   }
 
-  /* =======================
-      FETCH CHART
-  ======================= */
   const fetchChart = async () => {
     try {
       const res = await axios.get(
@@ -128,7 +125,6 @@ export default function Dashboard () {
   return (
     <SideBar>
       <div className='p-6 space-y-8 bg-slate-50 min-h-screen'>
-        {/* ===== SUMMARY ===== */}
         <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6'>
           {summaryData.map((item, i) => {
             const Icon = item.icon
@@ -141,12 +137,10 @@ export default function Dashboard () {
                   <div>
                     <p className='text-sm opacity-80'>{item.title}</p>
 
-                    {/* TOTAL KUNJUNGAN */}
                     <h2 className='text-3xl font-bold'>
                       {item.visits.toLocaleString()}
                     </h2>
 
-                    {/* VISITOR UNIK */}
                     <p className='text-xs opacity-80'>
                       {item.visitors.toLocaleString()} visitors
                     </p>
@@ -159,7 +153,6 @@ export default function Dashboard () {
           })}
         </div>
 
-        {/* ===== FILTER ===== */}
         <div className='flex justify-end'>
           <Select value={filter} onValueChange={setFilter}>
             <SelectTrigger className='w-[180px] bg-white shadow'>
@@ -173,7 +166,6 @@ export default function Dashboard () {
           </Select>
         </div>
 
-        {/* ===== CHART ===== */}
         <Card className='bg-white shadow-xl'>
           <CardHeader>
             <CardTitle>Grafik Kunjungan</CardTitle>

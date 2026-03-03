@@ -52,6 +52,7 @@ function Dashboard() {
 
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [selectedVideo, setSelectedVideo] = useState(null);
 
   const fetchData = async () => {
     setLoading(true);
@@ -74,12 +75,10 @@ function Dashboard() {
   }, []);
 
   const handleOpenDetail = async (id) => {
-    // 1. Reset data lama agar tidak muncul data lama saat loading
     setSelectedData(null);
     try {
       const res = await axios.get(`http://localhost:3000/api/atraksi/${id}`);
       console.log("Detail atraksi:", res.data);
-      // Perbaikan: Ambil properti 'data' dari response (sesuai log konsol Anda)
       const eventData = res.data.data || res.data.event || res.data;
       setSelectedData(eventData);
       setOpenDetailModal(true);
@@ -89,7 +88,6 @@ function Dashboard() {
     }
   };
 
-  // 🧮 Filter dan pencarian
   const filteredData = useMemo(() => {
     return data.filter((item) => {
       const matchSearch =
@@ -102,12 +100,31 @@ function Dashboard() {
     });
   }, [data, search, filterLokasi]);
 
-  // 📄 Pagination
   const totalPages = Math.ceil(filteredData.length / itemsPerPage);
   const paginatedData = filteredData.slice(
     (currentPage - 1) * itemsPerPage,
     currentPage * itemsPerPage,
   );
+
+  const getYoutubeId = (url) => {
+    if (!url) return null;
+
+    try {
+      const urlObj = new URL(url);
+
+      if (urlObj.hostname === "youtu.be") {
+        return urlObj.pathname.slice(1);
+      }
+
+      if (urlObj.searchParams.get("v")) {
+        return urlObj.searchParams.get("v");
+      }
+
+      return null;
+    } catch {
+      return null;
+    }
+  };
 
   const handleEditData = (updatedData) => {
     setData((prev) =>
@@ -182,10 +199,8 @@ function Dashboard() {
             </Select>
           </div>
 
-          {/* 📊 Tabel Data */}
           <div className="bg-white rounded-xl shadow-md overflow-hidden">
             <Table>
-              {/* <TableCaption>Data atraksi wisata di Sulawesi Tengah</TableCaption> */}
               <TableHeader>
                 <TableRow>
                   <TableHead>No</TableHead>
@@ -193,7 +208,7 @@ function Dashboard() {
                   <TableHead>Deskripsi</TableHead>
                   <TableHead>Lokasi</TableHead>
                   <TableHead>Tanggal</TableHead>
-                  <TableHead>Foto</TableHead>
+                  <TableHead>Foto/Video</TableHead>
                   <TableHead className="text-center">Aksi</TableHead>
                 </TableRow>
               </TableHeader>
@@ -223,21 +238,66 @@ function Dashboard() {
                         {formatTanggal(item.enddate)}
                       </TableCell>
                       <TableCell>
-                        {item.foto &&
-                          (item.foto.match(/\.(mp4|webm|ogg)$/i) ? (
-                            <video
-                              src={`http://localhost:3000${item.foto}`}
-                              className="w-16 h-16 object-cover rounded-lg border"
-                              muted
-                              preload="metadata"
-                            />
-                          ) : (
-                            <img
-                              src={`http://localhost:3000${item.foto}`}
-                              alt={item.nameEvent}
-                              className="w-16 h-16 object-cover rounded-lg border"
-                            />
-                          ))}
+                        {(() => {
+                          if (item.foto) {
+                            if (item.foto.match(/\.(mp4|webm|ogg)$/i)) {
+                              return (
+                                <div
+                                  className="relative cursor-pointer w-24 aspect-video"
+                                  onClick={() =>
+                                    setSelectedVideo(
+                                      `http://localhost:3000${item.foto}`,
+                                    )
+                                  }
+                                >
+                                  <video
+                                    src={`http://localhost:3000${item.foto}`}
+                                    className="w-full h-full object-cover rounded-lg border"
+                                    preload="metadata"
+                                  />
+
+                                  <div className="absolute inset-0 flex items-center justify-center bg-black/30 rounded-lg text-white">
+                                    ▶
+                                  </div>
+                                </div>
+                              );
+                            }
+
+                            return (
+                              <div className="relative w-24 aspect-video">
+                                <img
+                                  src={`http://localhost:3000${item.foto}`}
+                                  alt={item.nameEvent}
+                                  className="w-full h-full object-cover rounded-lg border"
+                                />
+                              </div>
+                            );
+                          }
+
+                          const videoId = getYoutubeId(item.link_video);
+
+                          if (videoId) {
+                            return (
+                              <div
+                                className="relative cursor-pointer w-24 aspect-video"
+                                onClick={() =>
+                                  setSelectedVideo(item.link_video)
+                                }
+                              >
+                                <img
+                                  src={`https://img.youtube.com/vi/${videoId}/hqdefault.jpg`}
+                                  className="w-full h-full object-cover rounded-lg border"
+                                />
+
+                                <div className="absolute inset-0 flex items-center justify-center bg-black/30 rounded-lg text-white">
+                                  ▶
+                                </div>
+                              </div>
+                            );
+                          }
+
+                          return null;
+                        })()}
                       </TableCell>
                       <TableCell className="flex justify-center gap-2">
                         <Button
@@ -260,7 +320,6 @@ function Dashboard() {
                         >
                           Edit
                         </Button>
-                        {/* Hapus */}
                         <AlertDialog>
                           <AlertDialogTrigger asChild>
                             <Button variant="destructive" size="sm">
@@ -304,7 +363,6 @@ function Dashboard() {
             </Table>
           </div>
 
-          {/* 📄 Pagination */}
           <div className="flex justify-end items-center gap-2 mt-4">
             <Button
               variant="outline"
@@ -327,14 +385,12 @@ function Dashboard() {
             </Button>
           </div>
 
-          {/* 🪄 Modal Tambah Data */}
           <AddDataModal
             open={openAddModal}
             onClose={() => setOpenAddModal(false)}
             refreshData={fetchData}
           />
 
-          {/* ✏️ Modal Edit Data */}
           <EditDataModal
             open={openEditModal}
             onClose={() => setOpenEditModal(false)}
@@ -343,56 +399,97 @@ function Dashboard() {
             refreshData={fetchData}
           />
 
-          {/* 👁️ Modal Detail Data */}
           <Dialog open={openDetailModal} onOpenChange={setOpenDetailModal}>
             <DialogContent>
+              {selectedData && (
+                <>
+                  <DialogHeader>
+                    <DialogTitle>Detail Atraksi</DialogTitle>
+                  </DialogHeader>
+
+                  <div className="space-y-2 mt-3 gap-2 flex flex-col text-md">
+                    <div className="flex flex-col gap-1">
+                      <Label className="font-bold">Nama Atraksi :</Label>
+                      <p>{selectedData.nameEvent}</p>
+                    </div>
+                    <div className="flex flex-col gap-1">
+                      <Label className="font-bold">Deskripsi :</Label>
+                      <p className="max-w-[300px] max-h-[100px] overflow-y-auto whitespace-normal break-words text-justify">
+                        {selectedData.description_id}
+                      </p>
+                    </div>
+                    <div className="flex flex-col gap-1">
+                      <Label className="font-bold">Lokasi :</Label>
+                      <p>{selectedData.location_id}</p>
+                    </div>
+                    <div className="flex flex-col gap-1">
+                      <Label className="font-bold">Tanggal :</Label>
+                      {selectedData.startdate
+                        ? formatTanggal(selectedData.startdate)
+                        : "-"}{" "}
+                      -{" "}
+                      {selectedData.enddate
+                        ? formatTanggal(selectedData.enddate)
+                        : "-"}
+                    </div>
+                  </div>
+                  {selectedData.foto ? (
+                    selectedData.foto.match(/\.(mp4|webm|ogg)$/i) ? (
+                      <video
+                        src={`http://localhost:3000${selectedData.foto}`}
+                        controls
+                        className="w-full aspect-video object-cover rounded-lg mt-2"
+                      />
+                    ) : (
+                      <img
+                        src={`http://localhost:3000${selectedData.foto}`}
+                        alt={selectedData.nameEvent}
+                        className="w-full aspect-video object-cover rounded-lg mt-2"
+                      />
+                    )
+                  ) : selectedData.link_video ? (
+                    <iframe
+                      className="w-full aspect-video rounded-lg mt-2"
+                      src={`https://www.youtube.com/embed/${getYoutubeId(
+                        selectedData.link_video,
+                      )}`}
+                      title="YouTube video"
+                      allowFullScreen
+                    />
+                  ) : null}
+                </>
+              )}
+            </DialogContent>
+          </Dialog>
+
+          <Dialog
+            open={!!selectedVideo}
+            onOpenChange={() => setSelectedVideo(null)}
+          >
+            <DialogContent className="max-w-5xl w-full">
               <DialogHeader>
-                <DialogTitle>Detail Atraksi</DialogTitle>
+                <DialogTitle>Preview Video</DialogTitle>
               </DialogHeader>
 
-              {selectedData && (
-                <div className="space-y-2 mt-3 gap-2 flex flex-col text-md">
-                  <div className="flex flex-col gap-1">
-                    <Label className="font-bold">Nama Atraksi :</Label>
-                    <p>{selectedData.nameEvent}</p>
-                  </div>
-                  <div className="flex flex-col gap-1">
-                    <Label className="font-bold">Deskripsi :</Label>
-                    <p className="max-w-[300px] max-h-[100px] overflow-y-auto whitespace-normal break-words text-justify">
-                      {selectedData.description_id}
-                    </p>
-                  </div>
-                  <div className="flex flex-col gap-1">
-                    <Label className="font-bold">Lokasi :</Label>
-                    <p>{selectedData.location_id}</p>
-                  </div>
-                  <div className="flex flex-col gap-1">
-                    <Label className="font-bold">Tanggal :</Label>
-                    {selectedData.startdate
-                      ? formatTanggal(selectedData.startdate)
-                      : "-"}{" "}
-                    -{" "}
-                    {selectedData.enddate
-                      ? formatTanggal(selectedData.enddate)
-                      : "-"}
-                  </div>
+              {selectedVideo && (
+                <div className="w-full aspect-video">
+                  {selectedVideo.includes("youtube.com") ||
+                  selectedVideo.includes("youtu.be") ? (
+                    <iframe
+                      src={`https://www.youtube.com/embed/${getYoutubeId(selectedVideo)}`}
+                      allowFullScreen
+                      className="w-full h-full rounded-lg"
+                    />
+                  ) : (
+                    <video
+                      src={selectedVideo}
+                      controls
+                      autoPlay
+                      className="w-full h-full rounded-lg"
+                    />
+                  )}
                 </div>
               )}
-
-              {selectedData?.foto &&
-                (selectedData.foto.match(/\.(mp4|webm|ogg)$/i) ? (
-                  <video
-                    src={`http://localhost:3000${selectedData.foto}`}
-                    controls
-                    className="w-full max-h-[400px] object-cover rounded-lg mt-2"
-                  />
-                ) : (
-                  <img
-                    src={`http://localhost:3000${selectedData.foto}`}
-                    alt={selectedData?.nameEvent}
-                    className="w-full max-h-[400px] object-cover rounded-lg mt-2"
-                  />
-                ))}
             </DialogContent>
           </Dialog>
         </div>

@@ -24,7 +24,7 @@ const Login = () => {
     try {
       const res = await axios.post(
         "http://localhost:3000/api/user/login",
-        formData
+        formData,
       );
 
       console.log("✅ Login berhasil:", res.data);
@@ -33,7 +33,6 @@ const Login = () => {
       const token = res.data.data?.token;
 
       if (admin && token) {
-        // SIMPAN TOKEN DAN DATA ADMIN
         localStorage.setItem("token", token);
         localStorage.setItem("admin", JSON.stringify(admin));
 

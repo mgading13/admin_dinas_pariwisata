@@ -28,7 +28,6 @@ export default function ProfilModal({ open, onOpenChange, adminId }) {
     password: "",
   });
 
-  // GET DATA ADMIN
   useEffect(() => {
     if (!open || !adminId) return;
 
@@ -45,12 +44,10 @@ export default function ProfilModal({ open, onOpenChange, adminId }) {
       .catch(() => toast.error("Tidak dapat memuat data admin"));
   }, [open, adminId]);
 
-  // HANDLE INPUT
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
-  // PATCH (UPDATE DATA)
   const handleSave = async () => {
     try {
       const payload = {
@@ -59,7 +56,6 @@ export default function ProfilModal({ open, onOpenChange, adminId }) {
         username: form.username,
       };
 
-      // Hanya kirim password jika user mengisi
       if (form.password.trim() !== "") {
         payload.password = form.password;
       }
@@ -68,12 +64,10 @@ export default function ProfilModal({ open, onOpenChange, adminId }) {
 
       toast.success("Data berhasil diperbarui");
 
-      // Jika password diupdate, logout otomatis
       if (form.password.trim() !== "") {
-        // hapus token / session
-        localStorage.removeItem("token"); // contoh jika pakai JWT
-        sessionStorage.clear(); // hapus session storage
-        window.location.href = "/"; // redirect ke halaman login
+        localStorage.removeItem("token"); 
+        sessionStorage.clear();
+        window.location.href = "/"; 
         return;
       }
 

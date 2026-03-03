@@ -53,6 +53,7 @@ function Dashboard() {
 
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [selectedVideo, setSelectedVideo] = useState(null);
 
   const fetchData = async () => {
     try {
@@ -80,7 +81,6 @@ function Dashboard() {
     }
   };
 
-  // 🧮 Filter dan pencarian
   const filteredData = useMemo(() => {
     return data.filter((item) => {
       const matchSearch =
@@ -92,12 +92,33 @@ function Dashboard() {
     });
   }, [data, search, filterLokasi]);
 
-  // 📄 Pagination
   const totalPages = Math.ceil(filteredData.length / itemsPerPage);
   const paginatedData = filteredData.slice(
     (currentPage - 1) * itemsPerPage,
     currentPage * itemsPerPage,
   );
+
+  const getYoutubeId = (url) => {
+    if (!url) return null;
+
+    try {
+      const urlObj = new URL(url);
+
+      // format youtu.be/VIDEO_ID
+      if (urlObj.hostname === "youtu.be") {
+        return urlObj.pathname.slice(1);
+      }
+
+      // format youtube.com/watch?v=VIDEO_ID
+      if (urlObj.searchParams.get("v")) {
+        return urlObj.searchParams.get("v");
+      }
+
+      return null;
+    } catch {
+      return null;
+    }
+  };
 
   const handleEditData = (updatedData) => {
     setData((prev) =>
@@ -120,13 +141,11 @@ function Dashboard() {
   return (
     <SideBar>
       <div className="p-8 bg-gray-50 min-h-screen">
-        {/* Header */}
         <div className="flex justify-between items-center pt-10 mb-6">
           <h1 className="text-2xl font-bold">Daftar Paket Wisata</h1>
           <Button onClick={() => setOpenAddModal(true)}>Tambah Data</Button>
         </div>
 
-        {/* Search */}
         <div className="mb-5 flex justify-between items-center">
           <Input
             placeholder="Cari berdasarkan nama wisata dan lokasi"
@@ -159,7 +178,6 @@ function Dashboard() {
           </Select>
         </div>
 
-        {/* 📊 Tabel Data */}
         <div className="bg-white rounded-xl shadow-md overflow-hidden">
           <Table>
             <TableHeader>
@@ -170,7 +188,7 @@ function Dashboard() {
                 <TableHead>Deskripsi</TableHead>
                 <TableHead>Harga</TableHead>
                 <TableHead>Kontak</TableHead>
-                <TableHead>Foto</TableHead>
+                <TableHead>Foto / Video</TableHead>
                 <TableHead className="text-center">Aksi</TableHead>
               </TableRow>
             </TableHeader>
@@ -202,21 +220,64 @@ function Dashboard() {
                     <TableCell>{item.kontak}</TableCell>
 
                     <TableCell>
-                      {item.media &&
-                        (item.media.match(/\.(mp4|webm|ogg)$/i) ? (
-                          <video
-                            src={`http://localhost:3000${item.media}`}
-                            className="w-16 h-16 object-cover rounded-lg border"
-                            muted
-                            preload="metadata"
-                          />
-                        ) : (
-                          <img
-                            src={`http://localhost:3000${item.media}`}
-                            alt={item.nama_wisata_id}
-                            className="w-16 h-16 object-cover rounded-lg border"
-                          />
-                        ))}
+                      {(() => {
+                        if (item.media) {
+                          // VIDEO LOKAL
+                          if (item.media.match(/\.(mp4|webm|ogg)$/i)) {
+                            return (
+                              <div
+                                className="relative cursor-pointer w-24 aspect-video"
+                                onClick={() =>
+                                  setSelectedVideo(
+                                    `http://localhost:3000${item.media}`,
+                                  )
+                                }
+                              >
+                                <video
+                                  src={`http://localhost:3000${item.media}`}
+                                  className="w-full h-full object-cover rounded-lg border"
+                                  preload="metadata"
+                                />
+
+                                <div className="absolute inset-0 flex items-center justify-center bg-black/30 rounded-lg text-white">
+                                  ▶
+                                </div>
+                              </div>
+                            );
+                          }
+
+                          return (
+                            <div className="relative w-24 aspect-video">
+                              <img
+                                src={`http://localhost:3000${item.media}`}
+                                alt={item.nama_wisata_id}
+                                className="w-full h-full object-cover rounded-lg border"
+                              />
+                            </div>
+                          );
+                        }
+                        const videoId = getYoutubeId(item.link_video);
+
+                        if (videoId) {
+                          return (
+                            <div
+                              className="relative cursor-pointer w-24 aspect-video"
+                              onClick={() => setSelectedVideo(item.link_video)}
+                            >
+                              <img
+                                src={`https://img.youtube.com/vi/${videoId}/hqdefault.jpg`}
+                                className="w-full h-full object-cover rounded-lg border"
+                              />
+
+                              <div className="absolute inset-0 flex items-center justify-center bg-black/30 rounded-lg text-white">
+                                ▶
+                              </div>
+                            </div>
+                          );
+                        }
+
+                        return null;
+                      })()}
                     </TableCell>
 
                     <TableCell className="flex justify-center gap-2">
@@ -242,7 +303,6 @@ function Dashboard() {
                         Edit
                       </Button>
 
-                      {/* Hapus */}
                       <AlertDialog>
                         <AlertDialogTrigger asChild>
                           <Button variant="destructive" size="sm">
@@ -286,7 +346,6 @@ function Dashboard() {
           </Table>
         </div>
 
-        {/* 📄 Pagination */}
         <div className="flex justify-end items-center gap-2 mt-4">
           <Button
             variant="outline"
@@ -309,14 +368,12 @@ function Dashboard() {
           </Button>
         </div>
 
-        {/* 🪄 Modal Tambah */}
         <AddDataModal
           open={openAddModal}
           onClose={() => setOpenAddModal(false)}
           refreshData={fetchData}
         />
 
-        {/* ✏️ Modal Edit */}
         <EditDataModal
           open={openEditModal}
           onClose={() => setOpenEditModal(false)}
@@ -325,7 +382,6 @@ function Dashboard() {
           refreshData={fetchData}
         />
 
-        {/* 👁️ Modal Detail */}
         <Dialog open={openDetailModal} onOpenChange={setOpenDetailModal}>
           <DialogContent>
             <DialogHeader>
@@ -360,20 +416,63 @@ function Dashboard() {
                   <Label className="font-bold">Kontak :</Label>
                   <p>{selectedData.kontak}</p>
                 </div>
-                {selectedData?.media &&
-                  (selectedData.media.match(/\.(mp4|webm|ogg)$/i) ? (
+                {selectedData.media ? (
+                  selectedData.media.match(/\.(mp4|webm|ogg)$/i) ? (
                     <video
                       src={`http://localhost:3000${selectedData.media}`}
                       controls
-                      className="w-full max-h-[400px] object-cover rounded-lg mt-2"
+                      className="w-full aspect-video object-cover rounded-lg mt-2"
                     />
                   ) : (
                     <img
                       src={`http://localhost:3000${selectedData.media}`}
-                      alt={selectedData?.nama_wisata_id}
-                      className="w-full max-h-[400px] object-cover rounded-lg mt-2"
+                      alt={selectedData.nama_wisata_id}
+                      className="w-full aspect-video object-cover rounded-lg mt-2"
                     />
-                  ))}
+                  )
+                ) : null}
+
+                {!selectedData.media && selectedData.link_video && (
+                  <iframe
+                    className="w-full aspect-video rounded-lg mt-2"
+                    src={`https://www.youtube.com/embed/${getYoutubeId(
+                      selectedData.link_video,
+                    )}`}
+                    title="YouTube video"
+                    allowFullScreen
+                  />
+                )}
+              </div>
+            )}
+          </DialogContent>
+        </Dialog>
+
+        <Dialog
+          open={!!selectedVideo}
+          onOpenChange={() => setSelectedVideo(null)}
+        >
+          <DialogContent className="max-w-5xl w-full">
+            <DialogHeader>
+              <DialogTitle>Preview Video</DialogTitle>
+            </DialogHeader>
+
+            {selectedVideo && (
+              <div className="w-full aspect-video">
+                {selectedVideo.includes("youtube.com") ||
+                selectedVideo.includes("youtu.be") ? (
+                  <iframe
+                    src={`https://www.youtube.com/embed/${getYoutubeId(selectedVideo)}`}
+                    allowFullScreen
+                    className="w-full h-full rounded-lg"
+                  />
+                ) : (
+                  <video
+                    src={selectedVideo}
+                    controls
+                    autoPlay
+                    className="w-full h-full rounded-lg"
+                  />
+                )}
               </div>
             )}
           </DialogContent>

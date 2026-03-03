@@ -15,13 +15,16 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import debounce from "lodash.debounce";
 import axios from "axios";
+import { Trash } from "lucide-react";
+
 import { toast } from "sonner";
 
 const EditDataModal = ({ open, onClose, initialData, refreshData }) => {
   const [loading, setLoading] = useState(false);
+  const fileInputRef = useRef(null);
   const [form, setForm] = useState({
     namaDesa_id: "",
     namaDesa_en: "",
@@ -33,22 +36,21 @@ const EditDataModal = ({ open, onClose, initialData, refreshData }) => {
     longitude: "",
     latitude: "",
     jenisDesa: "",
+    link_video: "",
   });
 
-  // --- START LOGIKA DEBOUNCE ---
   const translateText = async (text, fieldTarget) => {
     if (!text || text.length < 3) return;
     try {
       const res = await axios.get(
         `https://translate.googleapis.com/translate_a/single?client=gtx&sl=id&tl=en&dt=t&q=${encodeURI(text)}`,
       );
-      // PERBAIKAN: Jangan cuma ambil [0][0][0]
-      // Kita looping semua potongan kalimat yang dipisah oleh titik/newline
+
       if (res.data && res.data[0]) {
         const fullTranslation = res.data[0]
-          .map((item) => item[0]) // Ambil hasil translasinya saja
-          .filter((item) => item !== null) // Buang yang kosong
-          .join(" "); // Gabungkan kembali menjadi satu paragraf utuh
+          .map((item) => item[0])
+          .filter((item) => item !== null)
+          .join(" ");
 
         setForm((prev) => ({ ...prev, [fieldTarget]: fullTranslation }));
       }
@@ -63,7 +65,6 @@ const EditDataModal = ({ open, onClose, initialData, refreshData }) => {
     }, 1500),
     [],
   );
-  // --- END LOGIKA DEBOUNCE ---
 
   useEffect(() => {
     if (open) {
@@ -80,6 +81,7 @@ const EditDataModal = ({ open, onClose, initialData, refreshData }) => {
           longitude: initialData.longitude || "",
           latitude: initialData.latitude || "",
           jenisDesa: initialData.jenisDesa || "",
+          link_video: initialData.link_video || "",
         });
       } else {
         setForm({
@@ -90,6 +92,7 @@ const EditDataModal = ({ open, onClose, initialData, refreshData }) => {
           longitude: "",
           latitude: "",
           jenisDesa: "",
+          link_video: "",
         });
       }
     }
@@ -97,41 +100,96 @@ const EditDataModal = ({ open, onClose, initialData, refreshData }) => {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setForm((prev) => ({ ...prev, [name]: value }));
 
-    // PERUBAHAN DI SINI: Trigger translate saat edit kolom Indonesia
     if (name === "namaDesa_id") debouncedTranslate(value, "namaDesa_en");
     if (name === "lokasi_id") debouncedTranslate(value, "lokasi_en");
     if (name === "deskripsi_id") debouncedTranslate(value, "deskripsi_en");
+    if (name === "link_video") {
+      setForm({
+        ...form,
+        link_video: value,
+        foto: "",
+      });
+      return;
+    }
+    setForm((prev) => ({ ...prev, [name]: value }));
   };
 
   const handlePhoto = (e) => {
     const file = e.target.files[0];
-    setForm({ ...form, foto: file });
+    if (file) {
+      setForm({
+        ...form,
+        foto: file,
+        link_video: "",
+      });
+    }
+  };
+
+  const handleRemoveFile = async () => {
+    if (form.foto && typeof form.foto === "object") {
+      setForm((prev) => ({
+        ...prev,
+        foto: "",
+      }));
+
+      if (fileInputRef.current) {
+        fileInputRef.current.value = "";
+      }
+
+      return;
+    }
+
+    try {
+      await axios.delete(
+        `http://localhost:3000/api/desaWisata/foto/${initialData.id}`,
+      );
+
+      setForm((prev) => ({
+        ...prev,
+        foto: "",
+      }));
+
+      if (fileInputRef.current) {
+        fileInputRef.current.value = "";
+      }
+
+      toast.success("File berhasil dihapus");
+    } catch (error) {
+      console.error("❌ Gagal menghapus file:", error);
+      toast.error("Gagal menghapus file");
+    }
+  };
+
+  const handleRemoveLink = () => {
+    setForm({
+      ...form,
+      link_video: "",
+    });
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    // Proteksi agar ID tidak undefined
     if (!initialData?.id) {
       toast.error("ID data tidak ditemukan!");
+      return;
+    }
+    if (!form.foto && !form.link_video) {
+      toast.warning("Harap isi salah satu antara Foto/Video atau Link Video ");
       return;
     }
     if (loading) return;
     setLoading(true);
     try {
       const formData = new FormData();
-      // OTOMATISASI: Mengisi field _en dengan nilai dari field _id
       formData.append("namaDesa_id", form.namaDesa_id);
-      formData.append("namaDesa_en", form.namaDesa_en); // Otomatis sama
-
+      formData.append("namaDesa_en", form.namaDesa_en);
       formData.append("lokasi_id", form.lokasi_id);
-      formData.append("lokasi_en", form.lokasi_en); // Otomatis sama
+      formData.append("lokasi_en", form.lokasi_en);
 
       formData.append("deskripsi_id", form.deskripsi_id);
-      formData.append("deskripsi_en", form.deskripsi_en); // Otomatis sama
+      formData.append("deskripsi_en", form.deskripsi_en);
 
-      // 👉 FIX TERPENTING
       if (form.foto && typeof form.foto === "object") {
         formData.append("foto", form.foto);
       }
@@ -139,6 +197,7 @@ const EditDataModal = ({ open, onClose, initialData, refreshData }) => {
       formData.append("longitude", form.longitude);
       formData.append("latitude", form.latitude);
       formData.append("jenisDesa", form.jenisDesa);
+      formData.append("link_video", form.link_video);
 
       const res = await axios.patch(
         `http://localhost:3000/api/desaWisata/${initialData.id}`,
@@ -148,15 +207,16 @@ const EditDataModal = ({ open, onClose, initialData, refreshData }) => {
         },
       );
       console.log("respons backend", res.data);
-      toast.success("Data berhasil ditambahkan!");
+      toast.success("Data berhasil diubah!");
+      console.log("REQ BODY:", res.data.link_video);
+      console.log("TYPE:", typeof res.data.link_video);
       refreshData?.();
       onClose();
     } catch (error) {
-      // Untuk melihat detail kenapa 400 Bad Request
       console.error("Detail Error Backend:", error.response?.data);
       toast.error("Gagal menyimpan data!");
     } finally {
-      -setLoading(false); // Button kembali ke "Simpan Perubahan"
+      setLoading(false);
     }
   };
 
@@ -252,46 +312,101 @@ const EditDataModal = ({ open, onClose, initialData, refreshData }) => {
               <Label>Foto / Video</Label>
 
               <Input
+                ref={fileInputRef}
                 name="foto"
                 type="file"
                 accept="image/*,video/*"
                 onChange={handlePhoto}
+                disabled={!!form.link_video}
                 className="w-full"
               />
 
-              {/* PREVIEW FILE LAMA */}
-              {form.foto &&
-                typeof form.foto === "string" &&
-                (form.foto.match(/\.(mp4|webm|ogg)$/i) ? (
-                  <video
-                    src={`http://localhost:3000${form.foto}`}
-                    controls
-                    className="mt-2 w-32 h-32 rounded-md border object-cover"
-                  />
-                ) : (
-                  <img
-                    src={`http://localhost:3000${form.foto}`}
-                    alt="Preview"
-                    className="mt-2 w-24 h-24 object-cover rounded-md border"
-                  />
-                ))}
+              {/* PREVIEW FILE */}
+              {form.foto && (
+                <div className="relative w-fit mt-2">
+                  {typeof form.foto === "string" ? (
+                    form.foto.match(/\.(mp4|webm|ogg)$/i) ? (
+                      <video
+                        src={`http://localhost:3000${form.foto}`}
+                        controls
+                        className="w-32 h-32 rounded-md border object-cover"
+                      />
+                    ) : (
+                      <img
+                        src={`http://localhost:3000${form.foto}`}
+                        alt="Preview"
+                        className="w-32 h-32 object-cover rounded-md border"
+                      />
+                    )
+                  ) : form.foto.type.startsWith("video/") ? (
+                    <video
+                      src={URL.createObjectURL(form.foto)}
+                      controls
+                      className="w-32 h-32 rounded-md border object-cover"
+                    />
+                  ) : (
+                    <img
+                      src={URL.createObjectURL(form.foto)}
+                      alt="Preview"
+                      className="w-32 h-32 object-cover rounded-md border"
+                    />
+                  )}
 
-              {/* PREVIEW FILE BARU */}
-              {form.foto &&
-                typeof form.foto === "object" &&
-                (form.foto.type.startsWith("video/") ? (
-                  <video
-                    src={URL.createObjectURL(form.foto)}
-                    controls
-                    className="mt-2 w-32 h-32 rounded-md border object-cover"
-                  />
-                ) : (
-                  <img
-                    src={URL.createObjectURL(form.foto)}
-                    alt="Preview"
-                    className="mt-2 w-24 h-24 object-cover rounded-md border"
-                  />
-                ))}
+                  <button
+                    type="button"
+                    onClick={handleRemoveFile}
+                    className="
+    absolute -top-2 -right-2
+    flex items-center justify-center
+    w-7 h-7
+    rounded-full
+    bg-red-500
+    text-white
+    shadow-md
+    hover:bg-red-600
+    hover:scale-110
+    transition-all duration-200
+  "
+                  >
+                    <Trash size={14} />
+                  </button>
+                </div>
+              )}
+            </div>
+
+            <div className="flex flex-col gap-2">
+              <Label>Link Video</Label>
+
+              <div className="flex gap-2">
+                <Input
+                  name="link_video"
+                  value={form.link_video}
+                  onChange={handleChange}
+                  placeholder="Masukkan link YouTube"
+                  disabled={!!form.foto}
+                  className="w-full"
+                />
+
+                {form.link_video && (
+                  <button
+                    type="button"
+                    onClick={handleRemoveLink}
+                    className="
+      flex items-center justify-center
+      w-9 h-9
+      rounded-md
+      bg-red-500
+      text-white
+      shadow-md
+      hover:bg-red-600
+      hover:scale-105
+      transition-all duration-200
+    "
+                  >
+                    <Trash size={16} />
+                  </button>
+                )}
+              </div>
             </div>
 
             <div className="flex justify-end gap-2 mt-4">

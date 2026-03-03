@@ -41,7 +41,6 @@ const AddDataModal = ({ open, onClose, initialData, refreshData }) => {
     fetchKuliner();
   }, []);
 
-  // Set initial data jika mode edit
   useEffect(() => {
     if (initialData) {
       setForm({
@@ -112,7 +111,6 @@ const AddDataModal = ({ open, onClose, initialData, refreshData }) => {
             />
           </div>
 
-          {/* Dropdown Kuliner */}
           <div className="flex flex-col gap-2">
             <Label>Pilih Jenis Kuliner</Label>
 
@@ -142,7 +140,6 @@ const AddDataModal = ({ open, onClose, initialData, refreshData }) => {
             </Select>
           </div>
 
-          {/* Link Gmaps */}
           <div className="flex flex-col gap-2">
             <Label>Link Google Maps</Label>
             <Input
@@ -155,7 +152,6 @@ const AddDataModal = ({ open, onClose, initialData, refreshData }) => {
             />
           </div>
 
-          {/* Tombol */}
           <div className="flex justify-end gap-2 mt-4">
             <Button type="button" variant="outline" onClick={onClose}>
               Batal

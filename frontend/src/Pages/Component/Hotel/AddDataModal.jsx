@@ -4,22 +4,18 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import axios from "axios";
 import { toast } from "sonner";
+import { Trash } from "lucide-react";
 
 const AddDataModal = ({ open, onClose, initialData, refreshData }) => {
+  const fileInputRef = useRef(null);
+  const [loading, setLoading] = useState(false);
   const [form, setForm] = useState({
     nama_hotel: "",
     lokasi: "",
@@ -30,6 +26,7 @@ const AddDataModal = ({ open, onClose, initialData, refreshData }) => {
     link_gmaps: "",
     telepon: "",
     foto: "",
+    link_video: "",
   });
 
   useEffect(() => {
@@ -44,6 +41,7 @@ const AddDataModal = ({ open, onClose, initialData, refreshData }) => {
         link_gmaps: initialData.link_gmaps || "",
         telepon: initialData.telepon || "",
         foto: initialData.foto || "",
+        link_video: initialData.link_video || "",
       });
     } else {
       setForm({
@@ -56,6 +54,7 @@ const AddDataModal = ({ open, onClose, initialData, refreshData }) => {
         link_gmaps: "",
         telepon: "",
         foto: "",
+        link_video: "",
       });
     }
   }, [initialData, open]);
@@ -75,16 +74,78 @@ const AddDataModal = ({ open, onClose, initialData, refreshData }) => {
       });
       return;
     }
+    if (name === "link_video") {
+      setForm({
+        ...form,
+        link_video: value,
+        foto: "",
+      });
+      return;
+    }
     setForm({ ...form, [name]: value });
   };
 
   const handlePhoto = (e) => {
     const file = e.target.files[0];
-    setForm({ ...form, foto: file });
+    if (file) {
+      setForm({
+        ...form,
+        foto: file,
+        link_video: "",
+      });
+    }
+  };
+
+   const handleRemoveFile = async () => {
+    if (form.foto && typeof form.foto === "object") {
+      setForm((prev) => ({
+        ...prev,
+        foto: "",
+      }));
+
+      if (fileInputRef.current) {
+        fileInputRef.current.value = "";
+      }
+
+      return;
+    }
+
+    try {
+      await axios.delete(
+        `http://localhost:3000/api/hotel/foto/${initialData.id}`,
+      );
+
+      setForm((prev) => ({
+        ...prev,
+        foto: "",
+      }));
+
+      if (fileInputRef.current) {
+        fileInputRef.current.value = "";
+      }
+
+      toast.success("File berhasil dihapus");
+    } catch (error) {
+      console.error("❌ Gagal menghapus file:", error);
+      toast.error("Gagal menghapus file");
+    }
+  };
+
+  const handleRemoveLink = () => {
+    setForm({
+      ...form,
+      link_video: "",
+    });
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (!form.foto && !form.link_video) {
+      toast.warning("Harap isi salah satu antara Foto/Video atau Link Video ");
+      return;
+    }
+    setLoading(true);
+
     try {
       const formData = new FormData();
 
@@ -99,6 +160,7 @@ const AddDataModal = ({ open, onClose, initialData, refreshData }) => {
       if (form.foto && typeof form.foto === "object") {
         formData.append("foto", form.foto);
       }
+      formData.append("link_video", form.link_video);
 
       const res = await axios.post(
         "http://localhost:3000/api/hotel/insert",
@@ -190,7 +252,7 @@ const AddDataModal = ({ open, onClose, initialData, refreshData }) => {
             </div>
 
             <div className="flex flex-col gap-2">
-              <Label>Website</Label>
+              <Label>Link Website Hotel</Label>
               <Input
                 name="website"
                 value={form.website}
@@ -201,7 +263,7 @@ const AddDataModal = ({ open, onClose, initialData, refreshData }) => {
             </div>
 
             <div className="flex flex-col gap-2">
-              <Label>Link Google Maps</Label>
+              <Label>Link Google Maps Hotel</Label>
               <Input
                 name="link_gmaps"
                 value={form.link_gmaps}
@@ -212,12 +274,12 @@ const AddDataModal = ({ open, onClose, initialData, refreshData }) => {
             </div>
 
             <div className="flex flex-col gap-2">
-              <Label>No. Telepon</Label>
+              <Label>Kontak</Label>
               <Input
                 name="telepon"
                 value={form.telepon}
                 onChange={handleChange}
-                placeholder="Masukkan nomor telepon hotel"
+                placeholder="Masukkan kontak hotel"
                 className="w-full"
               />
             </div>
@@ -226,54 +288,108 @@ const AddDataModal = ({ open, onClose, initialData, refreshData }) => {
               <Label>Foto / Video</Label>
 
               <Input
+                ref={fileInputRef}
                 name="foto"
                 type="file"
                 accept="image/*,video/*"
                 onChange={handlePhoto}
-                required={!initialData}
+                disabled={!!form.link_video}
                 className="w-full"
               />
 
-              {/* Preview file lama */}
-              {form.foto &&
-                typeof form.foto === "string" &&
-                (form.foto.match(/\.(mp4|webm|ogg)$/i) ? (
-                  <video
-                    src={form.foto}
-                    controls
-                    className="mt-2 w-32 h-32 rounded-md border object-cover"
-                  />
-                ) : (
-                  <img
-                    src={form.foto}
-                    alt="Preview"
-                    className="mt-2 w-24 h-24 object-cover rounded-md border"
-                  />
-                ))}
+              {/* PREVIEW FILE */}
+              {form.foto && (
+                <div className="relative w-fit mt-2">
+                  {typeof form.foto === "string" ? (
+                    form.foto.match(/\.(mp4|webm|ogg)$/i) ? (
+                      <video
+                        src={`http://localhost:3000${form.foto}`}
+                        controls
+                        className="w-32 h-32 rounded-md border object-cover"
+                      />
+                    ) : (
+                      <img
+                        src={`http://localhost:3000${form.foto}`}
+                        alt="Preview"
+                        className="w-32 h-32 object-cover rounded-md border"
+                      />
+                    )
+                  ) : form.foto.type.startsWith("video/") ? (
+                    <video
+                      src={URL.createObjectURL(form.foto)}
+                      controls
+                      className="w-32 h-32 rounded-md border object-cover"
+                    />
+                  ) : (
+                    <img
+                      src={URL.createObjectURL(form.foto)}
+                      alt="Preview"
+                      className="w-32 h-32 object-cover rounded-md border"
+                    />
+                  )}
 
-              {/* Preview file baru */}
-              {form.foto &&
-                typeof form.foto === "object" &&
-                (form.foto.type.startsWith("video/") ? (
-                  <video
-                    src={URL.createObjectURL(form.foto)}
-                    controls
-                    className="mt-2 w-32 h-32 rounded-md border object-cover"
-                  />
-                ) : (
-                  <img
-                    src={URL.createObjectURL(form.foto)}
-                    alt="Preview"
-                    className="mt-2 w-24 h-24 object-cover rounded-md border"
-                  />
-                ))}
+                  <button
+                    type="button"
+                    onClick={handleRemoveFile}
+                    className="
+    absolute -top-2 -right-2
+    flex items-center justify-center
+    w-7 h-7
+    rounded-full
+    bg-red-500
+    text-white
+    shadow-md
+    hover:bg-red-600
+    hover:scale-110
+    transition-all duration-200
+  "
+                  >
+                    <Trash size={14} />
+                  </button>
+                </div>
+              )}
+            </div>
+
+            <div className="flex flex-col gap-2">
+              <Label>Link Video</Label>
+
+              <div className="flex gap-2">
+                <Input
+                  name="link_video"
+                  value={form.link_video}
+                  onChange={handleChange}
+                  placeholder="Masukkan link YouTube"
+                  disabled={!!form.foto}
+                  className="w-full"
+                />
+
+                {form.link_video && (
+                  <button
+                    type="button"
+                    onClick={handleRemoveLink}
+                    className="
+      flex items-center justify-center
+      w-9 h-9
+      rounded-md
+      bg-red-500
+      text-white
+      shadow-md
+      hover:bg-red-600
+      hover:scale-105
+      transition-all duration-200
+    "
+                  >
+                    <Trash size={16} />
+                  </button>
+                )}
+              </div>
             </div>
 
             <div className="flex justify-end gap-2 mt-4">
               <Button type="button" variant="outline" onClick={onClose}>
                 Batal
               </Button>
-              <Button type="submit">
+              <Button type="submit" disabled={loading}>
                 {initialData ? "Simpan Perubahan" : "Tambah Data"}
               </Button>
             </div>
