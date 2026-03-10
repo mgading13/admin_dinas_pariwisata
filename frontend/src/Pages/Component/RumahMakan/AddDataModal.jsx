@@ -16,8 +16,9 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useState, useEffect } from "react";
-import axios from "axios";
 import { toast } from "sonner";
+import API from "@/lib/api";
+
 
 const AddDataModal = ({ open, onClose, initialData, refreshData }) => {
   const [kulinerList, setKulinerList] = useState([]);
@@ -32,7 +33,7 @@ const AddDataModal = ({ open, onClose, initialData, refreshData }) => {
   useEffect(() => {
     async function fetchKuliner() {
       try {
-        const res = await axios.get("http://localhost:3000/api/kuliner/");
+        const res = await API.get("/kuliner/");
         setKulinerList(res.data);
       } catch (error) {
         console.error("Gagal ambil kuliner:", error);
@@ -71,8 +72,8 @@ const AddDataModal = ({ open, onClose, initialData, refreshData }) => {
       formData.append("link_gmaps", form.link_gmaps);
       formData.append("kulinerId", form.kulinerId);
 
-      const res = await axios.post(
-        "http://localhost:3000/api/rumahMakan/insert",
+      const res = await API.post(
+        "/rumahMakan/insert",
         formData,
         {
           headers: { "Content-Type": "multipart/form-data" },

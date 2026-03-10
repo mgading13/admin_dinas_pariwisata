@@ -1,5 +1,4 @@
 import { useState, useEffect } from 'react'
-import axios from 'axios'
 import SideBar from '../SideBar'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import {
@@ -25,6 +24,7 @@ import {
   Clock,
   Globe
 } from 'lucide-react'
+import API from '@/lib/api'
 
 export default function Dashboard () {
   const [filter, setFilter] = useState('daily')
@@ -77,7 +77,7 @@ export default function Dashboard () {
   const [chartData, setChartData] = useState([])
   const fetchSummary = async () => {
     try {
-      const res = await axios.get('http://localhost:3000/api/pageview/summary')
+      const res = await API.get('/pageview/summary')
 
       const data = res.data
 
@@ -108,8 +108,8 @@ export default function Dashboard () {
 
   const fetchChart = async () => {
     try {
-      const res = await axios.get(
-        `http://localhost:3000/api/pageview/chart?filter=${filter}`
+      const res = await API.get(
+        `/pageview/chart?filter=${filter}`
       )
       setChartData(res.data)
     } catch (err) {

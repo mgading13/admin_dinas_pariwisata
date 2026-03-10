@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useCallback, useRef } from "react";
 import axios from "axios";
 import { toast } from "sonner";
 import { Trash } from "lucide-react";
@@ -53,33 +53,11 @@ const AddDataModal = ({ open, onClose, initialData, refreshData }) => {
     [],
   );
 
-  useEffect(() => {
-    if (initialData) {
-      setForm({
-        nama_makanan: initialData.nama_makanan || "",
-        lokasi: initialData.lokasi || "",
-        deskripsi: initialData.deskripsi_id || "",
-        deskripsi_en: initialData.deskripsi_en || "",
-        foto: initialData.foto || "",
-        link_video: initialData.link_video || "",
-      });
-    } else {
-      setForm({
-        nama_makanan: "",
-        lokasi: "",
-        deskripsi: "",
-        deskripsi_en: "",
-        foto: "",
-        link_video: "",
-      });
-    }
-  }, [initialData, open]);
-
   const handleChange = (e) => {
+    const { name, value } = e.target;
     if (name === "deskripsi_id") {
       debouncedTranslate(value, "deskripsi_en");
     }
-    const { name, value } = e.target;
     if (name === "link_video") {
       setForm({
         ...form,

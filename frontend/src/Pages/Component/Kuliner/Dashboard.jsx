@@ -37,9 +37,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
-
 import { toast } from "sonner";
-import axios from "axios";
+import API from "@/lib/api";
 
 function Dashboard() {
   const [openAddModal, setOpenAddModal] = useState(false);
@@ -50,14 +49,13 @@ function Dashboard() {
   const [filterLokasi, setFilterLokasi] = useState("all");
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 5;
-
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(false);
   const [selectedVideo, setSelectedVideo] = useState(null);
 
   const fetchData = async () => {
     try {
-      const res = await axios.get("http://localhost:3000/api/kuliner/");
+      const res = await API.get("/kuliner/");
       console.log("📦 Data dari backend:", res.data);
       setData(res.data.data || res.data);
     } catch (err) {
@@ -70,7 +68,7 @@ function Dashboard() {
 
   const handleOpenDetail = async (id) => {
     try {
-      const res = await axios.get(`http://localhost:3000/api/kuliner/${id}`);
+      const res = await API.get(`/kuliner/${id}`);
       console.log("Detail kuliner:", res.data);
       setSelectedData(res.data);
       setOpenDetailModal(true);
@@ -125,7 +123,7 @@ function Dashboard() {
 
   const handleDelete = async (id) => {
     try {
-      await axios.delete(`http://localhost:3000/api/kuliner/${id}`);
+      await API.delete(`/kuliner/${id}`);
       toast.success("Data berhasil dihapus.");
       setData((prev) => prev.filter((d) => d.id !== id));
     } catch (err) {

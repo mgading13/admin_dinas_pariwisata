@@ -13,7 +13,7 @@ import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { toast } from "sonner";
 import { Trash } from "lucide-react";
-
+import API from "@/lib/api";
 import debounce from "lodash.debounce";
 
 const AddDataModal = ({ open, onClose, initialData, refreshData }) => {
@@ -132,8 +132,8 @@ const AddDataModal = ({ open, onClose, initialData, refreshData }) => {
     }
 
     try {
-      await axios.delete(
-        `http://localhost:3000/api/atraksi/foto/${initialData.id}`,
+      await API.delete(
+        `/atraksi/foto/${initialData.id}`,
       );
 
       setForm((prev) => ({
@@ -180,8 +180,8 @@ const AddDataModal = ({ open, onClose, initialData, refreshData }) => {
       }
       formData.append("link_video", form.link_video);
 
-      const res = await axios.post(
-        "http://localhost:3000/api/atraksi/insert",
+      const res = await API.post(
+        "/atraksi/insert",
         formData,
         {
           headers: { "Content-Type": "multipart/form-data" },

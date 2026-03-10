@@ -38,7 +38,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
-import axios from "axios";
+import API from "@/lib/api";
 
 function Dashboard() {
   const [openAddModal, setOpenAddModal] = useState(false);
@@ -57,7 +57,7 @@ function Dashboard() {
   const fetchData = async () => {
     setLoading(true);
     try {
-      const res = await axios.get("http://localhost:3000/api/atraksi");
+      const res = await API.get("/atraksi");
       console.log("📦 Data dari backend:", res.data);
 
       // Ambil data array untuk tabel
@@ -77,7 +77,7 @@ function Dashboard() {
   const handleOpenDetail = async (id) => {
     setSelectedData(null);
     try {
-      const res = await axios.get(`http://localhost:3000/api/atraksi/${id}`);
+      const res = await API.get(`/atraksi/${id}`);
       console.log("Detail atraksi:", res.data);
       const eventData = res.data.data || res.data.event || res.data;
       setSelectedData(eventData);
@@ -135,7 +135,7 @@ function Dashboard() {
 
   const handleDelete = async (id) => {
     try {
-      await axios.delete(`http://localhost:3000/api/atraksi/${id}`);
+      await API.delete(`/atraksi/${id}`);
       toast.success("Data berhasil dihapus.");
       setData((prev) => prev.filter((d) => d.id !== id));
     } catch (err) {

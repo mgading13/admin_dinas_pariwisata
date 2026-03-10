@@ -19,8 +19,8 @@ import { useState, useEffect, useCallback, useRef } from "react";
 import debounce from "lodash.debounce";
 import axios from "axios";
 import { Trash } from "lucide-react";
-
 import { toast } from "sonner";
+import API from "@/lib/api";
 
 const EditDataModal = ({ open, onClose, initialData, refreshData }) => {
   const [loading, setLoading] = useState(false);
@@ -141,8 +141,8 @@ const EditDataModal = ({ open, onClose, initialData, refreshData }) => {
     }
 
     try {
-      await axios.delete(
-        `http://localhost:3000/api/desaWisata/foto/${initialData.id}`,
+      await API.delete(
+        `/desaWisata/foto/${initialData.id}`,
       );
 
       setForm((prev) => ({
@@ -199,8 +199,8 @@ const EditDataModal = ({ open, onClose, initialData, refreshData }) => {
       formData.append("jenisDesa", form.jenisDesa);
       formData.append("link_video", form.link_video);
 
-      const res = await axios.patch(
-        `http://localhost:3000/api/desaWisata/${initialData.id}`,
+      const res = await API.patch(
+        `/desaWisata/${initialData.id}`,
         formData,
         {
           headers: { "Content-Type": "multipart/form-data" },

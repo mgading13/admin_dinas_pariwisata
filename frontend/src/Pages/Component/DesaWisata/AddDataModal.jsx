@@ -20,6 +20,7 @@ import axios from "axios";
 import { toast } from "sonner";
 import { Trash } from "lucide-react";
 import debounce from "lodash.debounce";
+import API from "@/lib/api";
 
 const AddDataModal = ({ open, onClose, initialData, refreshData }) => {
   const [loading, setLoading] = useState(false);
@@ -141,8 +142,8 @@ const AddDataModal = ({ open, onClose, initialData, refreshData }) => {
     }
 
     try {
-      await axios.delete(
-        `http://localhost:3000/api/desaWisata/foto/${initialData.id}`,
+      await API.delete(
+        `/desaWisata/foto/${initialData.id}`,
       );
 
       setForm((prev) => ({
@@ -193,8 +194,8 @@ const AddDataModal = ({ open, onClose, initialData, refreshData }) => {
       formData.append("jenisDesa", form.jenisDesa);
       formData.append("link_video", form.link_video);
 
-      const res = await axios.post(
-        "http://localhost:3000/api/desaWisata/insert",
+      const res = await API.post(
+        "/desaWisata/insert",
         formData,
         {
           headers: { "Content-Type": "multipart/form-data" },

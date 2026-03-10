@@ -13,6 +13,7 @@ import axios from "axios";
 import { toast } from "sonner";
 import { Trash } from "lucide-react";
 import debounce from "lodash.debounce";
+import API from "@/lib/api";
 
 const EditDataModal = ({ open, onClose, initialData, refreshData }) => {
   const [loading, setLoading] = useState(false);
@@ -127,10 +128,9 @@ const EditDataModal = ({ open, onClose, initialData, refreshData }) => {
       return;
     }
 
-    // Kalau file lama
     try {
-      await axios.delete(
-        `http://localhost:3000/api/atraksi/foto/${initialData.id}`,
+      await API.delete(
+        `/atraksi/foto/${initialData.id}`,
       );
 
       setForm((prev) => ({
@@ -185,8 +185,8 @@ const EditDataModal = ({ open, onClose, initialData, refreshData }) => {
       }
       formData.append("link_video", form.link_video);
 
-      const res = await axios.patch(
-        `http://localhost:3000/api/atraksi/${initialData.id}`,
+      const res = await API.patch(
+        `/atraksi/${initialData.id}`,
         formData,
         {
           headers: { "Content-Type": "multipart/form-data" },

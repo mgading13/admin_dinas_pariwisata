@@ -37,9 +37,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
-
 import { toast } from "sonner";
-import axios from "axios";
+import API from "@/lib/api";
 
 function Dashboard() {
   const [openAddModal, setOpenAddModal] = useState(false);
@@ -57,7 +56,7 @@ function Dashboard() {
 
   const fetchData = async () => {
     try {
-      const res = await axios.get("http://localhost:3000/api/tourPackage");
+      const res = await API.get("/tourPackage");
       console.log("📦 Data dari backend:", res.data);
       setData(res.data.data || res.data);
     } catch (err) {
@@ -70,9 +69,7 @@ function Dashboard() {
 
   const handleOpenDetail = async (id) => {
     try {
-      const res = await axios.get(
-        `http://localhost:3000/api/tourPackage/${id}`,
-      );
+      const res = await API.get(`/tourPackage/${id}`);
       console.log("Detail paket wisata:", res.data);
       setSelectedData(res.data);
       setOpenDetailModal(true);
@@ -129,7 +126,7 @@ function Dashboard() {
 
   const handleDelete = async (id) => {
     try {
-      await axios.delete(`http://localhost:3000/api/tourPackage/${id}`);
+      await API.delete(`/tourPackage/${id}`);
       toast.success("Data berhasil dihapus.");
       setData((prev) => prev.filter((d) => d.id !== id));
     } catch (err) {

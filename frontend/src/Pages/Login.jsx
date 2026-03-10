@@ -1,11 +1,11 @@
 import { useState } from "react";
-import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { Eye, EyeOff } from "lucide-react";
+import API from "@/lib/api";
 
 const Login = () => {
   const [formData, setFormData] = useState({ username: "", password: "" });
@@ -21,11 +21,9 @@ const Login = () => {
     e.preventDefault();
     setError("");
 
+    console.log(formData);
     try {
-      const res = await axios.post(
-        "http://localhost:3000/api/user/login",
-        formData,
-      );
+      const res = await API.post("/user/login", formData);
 
       console.log("✅ Login berhasil:", res.data);
 
@@ -33,15 +31,18 @@ const Login = () => {
       const token = res.data.data?.token;
 
       if (admin && token) {
-        localStorage.setItem("token", token);
-        localStorage.setItem("admin", JSON.stringify(admin));
+        sessionStorage.setItem("token", token);
+        sessionStorage.setItem("admin", JSON.stringify(admin));
 
         toast.success("Login Berhasil");
         navigate("/admin/grafik-pengunjung");
+        console.log(res.data);
       }
     } catch (err) {
       console.error("❌ Login gagal:", err);
-      toast.error("Username atau Password Salah");
+      toast.error(
+        err.response?.data?.message || "Username atau Password Salah",
+      );
     }
   };
 
@@ -90,12 +91,7 @@ const Login = () => {
               Login
             </Button>
           </form>
-          <p className="text-center text-sm text-gray-600 mt-4">
-            Belum punya akun?{" "}
-            <a href="/admin/register" className="text-blue-600 hover:underline">
-              Register
-            </a>
-          </p>
+          
         </CardContent>
       </Card>
     </div>

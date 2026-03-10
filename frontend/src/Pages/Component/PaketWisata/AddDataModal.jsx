@@ -13,8 +13,8 @@ import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { toast } from "sonner";
 import { Trash } from "lucide-react";
-
 import debounce from "lodash.debounce";
+import API from "@/lib/api";
 
 const AddDataModal = ({ open, onClose, initialData, refreshData }) => {
   const navigate = useNavigate();
@@ -173,8 +173,8 @@ const AddDataModal = ({ open, onClose, initialData, refreshData }) => {
     }
 
     try {
-      await axios.delete(
-        `http://localhost:3000/api/tourPackage/media/${initialData.id}`,
+      await API.delete(
+        `/tourPackage/media/${initialData.id}`,
       );
 
       setForm((prev) => ({
@@ -224,8 +224,8 @@ const AddDataModal = ({ open, onClose, initialData, refreshData }) => {
       }
       formData.append("link_video", form.link_video);
 
-      const res = await axios.post(
-        "http://localhost:3000/api/tourPackage/insert",
+      const res = await API.post(
+        "/tourPackage/insert",
         formData,
         {
           headers: { "Content-Type": "multipart/form-data" },

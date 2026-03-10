@@ -24,18 +24,19 @@ import {
   Hotel,
   Navigation,
   ChartArea,
+  UserStar,
 } from "lucide-react";
 import { toast } from "sonner";
 import ProfilModal from "./ProfilModal";
 import DateTimeWidget from "../Component/DateTimeWidget";
-
-import axios from "axios";
+import API from "@/lib/api";
 
 export default function Sidebar({ children }) {
   const [open, setOpen] = useState(false);
   const [openProfil, setOpenProfil] = useState(false);
-  const localUser = JSON.parse(localStorage.getItem("admin"));
+  const localUser = JSON.parse(sessionStorage.getItem("admin"));
   const userId = localUser?.id;
+  const role = localUser?.role;
   const navigate = useNavigate();
   const location = useLocation();
   const [adminData, setAdminData] = useState({
@@ -47,8 +48,8 @@ export default function Sidebar({ children }) {
   useEffect(() => {
     if (!userId) return;
 
-    axios
-      .get(`http://localhost:3000/api/user/${userId}`)
+    API
+      .get(`/user/${userId}`)
       .then((res) => {
         const admin = res.data.data || res.data;
 
@@ -62,8 +63,8 @@ export default function Sidebar({ children }) {
   }, [userId]);
 
   const handleLogout = () => {
-    localStorage.removeItem("token");
-    localStorage.removeItem("admin");
+    sessionStorage.removeItem("token");
+    sessionStorage.removeItem("admin");
     toast.success("Logout Berhasil", {
       className: "bg-emerald-500 text-white font-medium",
     });
@@ -100,6 +101,27 @@ export default function Sidebar({ children }) {
 
         <ScrollArea className="flex-1 px-4 py-6">
           <nav className="space-y-2">
+            {role === "superAdmin" && (
+              <Link
+                to="/super-admin"
+                className={`flex items-center gap-3 px-3 py-2 rounded-lg font-medium transition
+      ${
+        isActive("/super-admin")
+          ? "bg-orange-100 text-orange-600 font-semibold"
+          : "text-gray-700 hover:bg-gray-100"
+      }`}
+              >
+                <UserStar
+                  className={`h-5 w-5 ${
+                    isActive("/super-admin")
+                      ? "text-orange-600"
+                      : "text-orange-500"
+                  }`}
+                />
+                Super Admin
+              </Link>
+            )}
+
             <Link
               to="/admin/grafik-pengunjung"
               className={`flex items-center gap-3 px-3 py-2 rounded-lg font-medium transition
@@ -255,7 +277,7 @@ export default function Sidebar({ children }) {
                 <Avatar>
                   <AvatarFallback
                     className={`${getAvatarColor(
-                      adminData.jenis_kelamin
+                      adminData.jenis_kelamin,
                     )} font-medium`}
                   >
                     {getInitials(adminData.nama_Lengkap)}
@@ -441,7 +463,7 @@ export default function Sidebar({ children }) {
                       <Avatar>
                         <AvatarFallback
                           className={`${getAvatarColor(
-                            adminData.jenis_kelamin
+                            adminData.jenis_kelamin,
                           )} font-medium`}
                         >
                           {getInitials(adminData.nama_Lengkap)}

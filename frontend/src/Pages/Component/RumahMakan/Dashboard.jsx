@@ -29,17 +29,9 @@ import {
   AlertDialogCancel,
   AlertDialogAction,
 } from "@/components/ui/alert-dialog";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
-
 import { toast } from "sonner";
-import axios from "axios";
+import API from "@/lib/api";
 
 function Dashboard() {
   const [openAddModal, setOpenAddModal] = useState(false);
@@ -55,7 +47,7 @@ function Dashboard() {
 
   const fetchData = async () => {
     try {
-      const res = await axios.get("http://localhost:3000/api/rumahMakan/");
+      const res = await API.get("/rumahMakan/");
       console.log("📦 Data dari backend:", res.data);
       const result = Array.isArray(res.data) ? res.data : [res.data];
       setData(result);
@@ -69,7 +61,7 @@ function Dashboard() {
 
   const handleOpenDetail = async (id) => {
     try {
-      const res = await axios.get(`http://localhost:3000/api/rumahMakan/${id}`);
+      const res = await API.get(`/rumahMakan/${id}`);
       console.log("Detail rumah makan:", res.data);
       setSelectedData(res.data);
 
@@ -101,7 +93,7 @@ function Dashboard() {
 
   const handleDelete = async (id) => {
     try {
-      await axios.delete(`http://localhost:3000/api/rumahMakan/${id}`);
+      await API.delete(`/rumahMakan/${id}`);
       toast.success("Data berhasil dihapus.");
       setData((prev) => prev.filter((d) => d.id !== id));
     } catch (err) {

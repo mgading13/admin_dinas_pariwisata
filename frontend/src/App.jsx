@@ -1,6 +1,5 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Login from "./Pages/Login";
-import Register from "./Pages/Register";
 import DashboardAtraksi from "../src/Pages/Component/Atraksi/Dashboard";
 import DashboardDesaWisata from "../src/Pages/Component/DesaWisata/Dashboard";
 import DashboardPaketWisata from "../src/Pages/Component/PaketWisata/Dashboard";
@@ -10,12 +9,22 @@ import DashboardHotel from "../src/Pages/Component/Hotel/Dashboard";
 import DashboardJarakDesa from "../src/Pages/Component/JarakDesa/Dashboard";
 import ProtectedRoute from "./Pages/Component/ProtectedRoute";
 import DashboardGrafikPengunjung from "./Pages/Component/Grafik/Dashboard";
+import DashboardSuperAdmin from "./Pages/Component/SuperAdmin/Dashboard";
 
 function App() {
   return (
     <BrowserRouter>
       <Routes>
         <Route path="/" element={<Login />} />
+        
+        <Route
+          path="/super-admin"
+          element={
+            <ProtectedRoute roleRequired="superAdmin">
+              <DashboardSuperAdmin />
+            </ProtectedRoute>
+          }
+        />
         <Route
           path="/admin/grafik-pengunjung"
           element={
@@ -24,6 +33,7 @@ function App() {
             </ProtectedRoute>
           }
         />
+
         <Route
           path="/admin/desa-wisata"
           element={
@@ -40,7 +50,6 @@ function App() {
             </ProtectedRoute>
           }
         />
-        <Route path="/admin/register" element={<Register />} />
 
         <Route
           path="/admin/paket-wisata"

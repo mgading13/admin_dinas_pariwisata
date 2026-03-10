@@ -1,5 +1,4 @@
 import { useEffect, useState } from "react";
-import axios from "axios";
 import {
   Dialog,
   DialogContent,
@@ -18,6 +17,7 @@ import {
 } from "@/components/ui/select";
 import { toast } from "sonner";
 import { Eye, EyeOff } from "lucide-react";
+import API from "@/lib/api";
 
 export default function ProfilModal({ open, onOpenChange, adminId }) {
   const [showPassword, setShowPassword] = useState(false);
@@ -31,8 +31,8 @@ export default function ProfilModal({ open, onOpenChange, adminId }) {
   useEffect(() => {
     if (!open || !adminId) return;
 
-    axios
-      .get(`http://localhost:3000/api/user/${adminId}`)
+    API
+      .get(`/user/${adminId}`)
       .then((res) => {
         setForm({
           nama_Lengkap: res.data.nama_Lengkap || "",
@@ -60,7 +60,7 @@ export default function ProfilModal({ open, onOpenChange, adminId }) {
         payload.password = form.password;
       }
 
-      await axios.patch(`http://localhost:3000/api/user/${adminId}`, payload);
+      await API.patch(`/user/${adminId}`, payload);
 
       toast.success("Data berhasil diperbarui");
 

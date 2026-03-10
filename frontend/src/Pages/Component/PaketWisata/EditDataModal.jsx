@@ -12,8 +12,8 @@ import { useState, useEffect, useCallback, useRef } from "react";
 import axios from "axios";
 import { toast } from "sonner";
 import { Trash } from "lucide-react";
-
 import debounce from "lodash.debounce";
+import API from "@/lib/api";
 
 const EditDataModal = ({ open, onClose, initialData, refreshData }) => {
   const [loading, setLoading] = useState(false);
@@ -199,9 +199,7 @@ const EditDataModal = ({ open, onClose, initialData, refreshData }) => {
     }
 
     try {
-      await axios.delete(
-        `http://localhost:3000/api/tourPackage/media/${initialData.id}`,
-      );
+      await API.delete(`/tourPackage/media/${initialData.id}`);
 
       setForm((prev) => ({
         ...prev,
@@ -259,8 +257,8 @@ const EditDataModal = ({ open, onClose, initialData, refreshData }) => {
 
       formData.append("link_video", form.link_video);
 
-      const res = await axios.patch(
-        `http://localhost:3000/api/tourPackage/${initialData.id}`,
+      const res = await API.patch(
+        `/tourPackage/${initialData.id}`,
         formData,
         {
           headers: { "Content-Type": "multipart/form-data" },

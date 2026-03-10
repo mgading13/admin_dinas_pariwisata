@@ -4,7 +4,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import {
@@ -16,9 +15,8 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { useState, useEffect } from "react";
-import axios from "axios";
 import { toast } from "sonner";
-
+import API from "@/lib/api";
 const EditDataModal = ({ open, onClose, initialData, refreshData }) => {
   const [desaList, setDesaList] = useState([]);
 
@@ -33,7 +31,7 @@ const EditDataModal = ({ open, onClose, initialData, refreshData }) => {
   useEffect(() => {
     async function fetchDesa() {
       try {
-        const res = await axios.get("http://localhost:3000/api/desaWisata/");
+        const res = await API.get("/desaWisata/");
         setDesaList(res.data);
       } catch (error) {
         console.error("Gagal ambil list desa wisata:", error);
@@ -83,8 +81,8 @@ const EditDataModal = ({ open, onClose, initialData, refreshData }) => {
         jalur_udara: form.jalur_udara,
       };
 
-      const res = await axios.patch(
-        `http://localhost:3000/api/jarak/${initialData.id}`,
+      const res = await API.patch(
+        `/jarak/${initialData.id}`,
         payload
       );
       toast.success("jalur-jalur desa berhasil ditambahkan!");

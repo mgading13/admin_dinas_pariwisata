@@ -28,8 +28,8 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { useState, useEffect } from "react";
-import axios from "axios";
 import { toast } from "sonner";
+import API from "@/lib/api";
 
 const AddDataModal = ({ open, onClose, initialData, refreshData }) => {
   const [desaList, setDesaList] = useState([]);
@@ -46,7 +46,7 @@ const AddDataModal = ({ open, onClose, initialData, refreshData }) => {
   useEffect(() => {
     async function fetchDesa() {
       try {
-        const res = await axios.get("http://localhost:3000/api/desaWisata/");
+        const res = await API.get("/desaWisata/");
         setDesaList(res.data);
       } catch (error) {
         console.error("Gagal ambil list desa wisata:", error);
@@ -61,8 +61,8 @@ const AddDataModal = ({ open, onClose, initialData, refreshData }) => {
       return;
     }
 
-    axios
-      .get(`http://localhost:3000/api/jarak?desaId=${form.desaId}`)
+    API
+      .get(`/jarak?desaId=${form.desaId}`)
       .then((res) => setExistingRoutes(res.data))
       .catch(() => setExistingRoutes([]));
   }, [form.desaId]);
@@ -116,10 +116,7 @@ const AddDataModal = ({ open, onClose, initialData, refreshData }) => {
         jalur_udara: form.jalur_udara,
       };
 
-      const res = await axios.post(
-        "http://localhost:3000/api/jarak/insert",
-        payload,
-      );
+      const res = await API.post("/jarak/insert", payload);
       toast.success("Jalur desa berhasil ditambahkan!");
       console.log("Add success:", res.data);
       refreshData?.();

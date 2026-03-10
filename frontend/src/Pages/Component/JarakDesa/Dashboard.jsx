@@ -37,9 +37,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
-
 import { toast } from "sonner";
-import axios from "axios";
+import API from "@/lib/api";
 
 function Dashboard() {
   const [openAddModal, setOpenAddModal] = useState(false);
@@ -57,7 +56,7 @@ function Dashboard() {
 
   const fetchDesa = async () => {
     try {
-      const res = await axios.get("http://localhost:3000/api/desaWisata");
+      const res = await API.get("/desaWisata/");
       setDesaList(res.data);
     } catch (err) {
       console.error("Gagal fetch desa:", err);
@@ -71,7 +70,7 @@ function Dashboard() {
 
   const fetchData = async () => {
     try {
-      const res = await axios.get("http://localhost:3000/api/jarak/");
+      const res = await API.get("/jarak/");
       console.log("📦 Data dari backend:", res.data);
       const result = Array.isArray(res.data) ? res.data : [res.data];
       setData(result);
@@ -121,7 +120,7 @@ function Dashboard() {
 
   const handleDelete = async (id) => {
     try {
-      await axios.delete(`http://localhost:3000/api/jarak/${id}`);
+      await API.delete(`/jarak/${id}`);
       toast.success("Data berhasil dihapus.");
       setData((prev) => prev.filter((d) => d.id !== id));
     } catch (err) {

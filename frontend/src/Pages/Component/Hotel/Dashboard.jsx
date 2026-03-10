@@ -37,9 +37,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
-
 import { toast } from "sonner";
-import axios from "axios";
+import API from "@/lib/api";
 
 function Dashboard() {
   const [openAddModal, setOpenAddModal] = useState(false);
@@ -56,7 +55,7 @@ function Dashboard() {
 
   const fetchData = async () => {
     try {
-      const res = await axios.get("http://localhost:3000/api/hotel/");
+      const res = await API.get("/hotel");
       console.log("📦 Data dari backend:", res.data);
       const result = Array.isArray(res.data) ? res.data : [res.data];
       setData(result);
@@ -70,7 +69,7 @@ function Dashboard() {
 
   const handleOpenDetail = async (id) => {
     try {
-      const res = await axios.get(`http://localhost:3000/api/hotel/${id}`);
+      const res = await API.get(`/hotel/${id}`);
       console.log("Detail hotel:", res.data);
       setSelectedData(res.data);
 
@@ -126,7 +125,7 @@ function Dashboard() {
 
   const handleDelete = async (id) => {
     try {
-      await axios.delete(`http://localhost:3000/api/hotel/${id}`);
+      await API.delete(`/hotel/${id}`);
       toast.success("Data Hotel berhasil dihapus!");
       setData((prev) => prev.filter((d) => d.id !== id));
     } catch (err) {
