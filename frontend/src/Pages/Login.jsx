@@ -21,11 +21,9 @@ const Login = () => {
     e.preventDefault();
     setError("");
 
-    console.log(formData);
     try {
       const res = await API.post("/user/login", formData);
-
-      console.log("✅ Login berhasil:", res.data);
+      const dataUser = res.data.data?.admin;
 
       const admin = res.data.data?.admin;
       const token = res.data.data?.token;
@@ -33,11 +31,18 @@ const Login = () => {
       if (admin && token) {
         sessionStorage.setItem("token", token);
         sessionStorage.setItem("admin", JSON.stringify(admin));
-
         toast.success("Login Berhasil");
         navigate("/admin/grafik-pengunjung");
-        console.log(res.data);
       }
+      console.log(
+        "✅ Login berhasil:",
+        "Username:",
+        dataUser.username,
+        "Nama Lengkap:",
+        dataUser.nama_Lengkap,
+        "Jenis Kelamin:",
+        dataUser.jenis_kelamin,
+      );
     } catch (err) {
       console.error("❌ Login gagal:", err);
       toast.error(
@@ -91,7 +96,6 @@ const Login = () => {
               Login
             </Button>
           </form>
-          
         </CardContent>
       </Card>
     </div>

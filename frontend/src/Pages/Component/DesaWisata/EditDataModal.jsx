@@ -206,10 +206,8 @@ const EditDataModal = ({ open, onClose, initialData, refreshData }) => {
           headers: { "Content-Type": "multipart/form-data" },
         },
       );
-      console.log("respons backend", res.data);
       toast.success("Data berhasil diubah!");
-      console.log("REQ BODY:", res.data.link_video);
-      console.log("TYPE:", typeof res.data.link_video);
+      console.log("Data:", res.data);
       refreshData?.();
       onClose();
     } catch (error) {

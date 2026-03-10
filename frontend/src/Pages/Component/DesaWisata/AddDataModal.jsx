@@ -69,7 +69,6 @@ const AddDataModal = ({ open, onClose, initialData, refreshData }) => {
   useEffect(() => {
     if (initialData) {
       setForm({
-        // 2. Ambil dari kolom _id karena itu versi Indonesianya
         namaDesa: initialData.namaDesa_id || "",
         namaDesa_en: initialData.namaDesa_en || "",
         lokasi: initialData.lokasi_id || "",
