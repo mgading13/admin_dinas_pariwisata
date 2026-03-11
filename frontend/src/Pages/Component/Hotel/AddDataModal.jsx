@@ -11,7 +11,7 @@ import { Label } from "@/components/ui/label";
 import { useState, useEffect, useRef } from "react";
 import { toast } from "sonner";
 import { Trash } from "lucide-react";
-import API from "@/lib/api"
+import API from "@/lib/api";
 
 const AddDataModal = ({ open, onClose, initialData, refreshData }) => {
   const fileInputRef = useRef(null);
@@ -96,7 +96,7 @@ const AddDataModal = ({ open, onClose, initialData, refreshData }) => {
     }
   };
 
-   const handleRemoveFile = async () => {
+  const handleRemoveFile = async () => {
     if (form.foto && typeof form.foto === "object") {
       setForm((prev) => ({
         ...prev,
@@ -160,13 +160,9 @@ const AddDataModal = ({ open, onClose, initialData, refreshData }) => {
       }
       formData.append("link_video", form.link_video);
 
-      const res = await API.post(
-        "/hotel/insert",
-        formData,
-        {
-          headers: { "Content-Type": "multipart/form-data" },
-        },
-      );
+      const res = await API.post("/hotel/insert", formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
       console.log("Response:", res.data);
       toast.success("Data berhasil ditambahkan!");
       refreshData?.();
@@ -289,7 +285,7 @@ const AddDataModal = ({ open, onClose, initialData, refreshData }) => {
                 ref={fileInputRef}
                 name="foto"
                 type="file"
-                accept="image/*,video/*"
+                accept=".jpg,.jpeg,.png,.gif,.webp,.mp4,.mov,.avi,.mkv"
                 onChange={handlePhoto}
                 disabled={!!form.link_video}
                 className="w-full"

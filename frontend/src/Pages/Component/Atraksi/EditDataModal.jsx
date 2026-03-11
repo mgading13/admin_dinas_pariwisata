@@ -287,7 +287,8 @@ const EditDataModal = ({ open, onClose, initialData, refreshData }) => {
                 ref={fileInputRef}
                 name="foto"
                 type="file"
-                accept="image/*,video/*"
+                                accept=".jpg,.jpeg,.png,.gif,.webp,.mp4,.mov,.avi,.mkv"
+
                 onChange={handlePhoto}
                 disabled={!!form.link_video}
                 className="w-full"

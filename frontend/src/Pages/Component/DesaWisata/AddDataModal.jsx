@@ -141,9 +141,7 @@ const AddDataModal = ({ open, onClose, initialData, refreshData }) => {
     }
 
     try {
-      await API.delete(
-        `/desaWisata/foto/${initialData.id}`,
-      );
+      await API.delete(`/desaWisata/foto/${initialData.id}`);
 
       setForm((prev) => ({
         ...prev,
@@ -193,13 +191,9 @@ const AddDataModal = ({ open, onClose, initialData, refreshData }) => {
       formData.append("jenisDesa", form.jenisDesa);
       formData.append("link_video", form.link_video);
 
-      const res = await API.post(
-        "/desaWisata/insert",
-        formData,
-        {
-          headers: { "Content-Type": "multipart/form-data" },
-        },
-      );
+      const res = await API.post("/desaWisata/insert", formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
       console.log("Response:", res.data);
       toast.success("Data berhasil ditambahkan!");
       refreshData?.();
@@ -308,7 +302,7 @@ const AddDataModal = ({ open, onClose, initialData, refreshData }) => {
                 ref={fileInputRef}
                 name="foto"
                 type="file"
-                accept="image/*,video/*"
+                accept=".jpg,.jpeg,.png,.gif,.webp,.mp4,.mov,.avi,.mkv"
                 onChange={handlePhoto}
                 disabled={!!form.link_video}
                 className="w-full"

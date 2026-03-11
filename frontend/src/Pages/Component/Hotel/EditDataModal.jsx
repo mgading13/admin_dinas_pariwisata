@@ -13,7 +13,6 @@ import { toast } from "sonner";
 import { Trash } from "lucide-react";
 import API from "@/lib/api";
 
-
 const EditDataModal = ({ open, onClose, initialData, refreshData }) => {
   const fileInputRef = useRef(null);
   const [loading, setLoading] = useState(false);
@@ -173,13 +172,9 @@ const EditDataModal = ({ open, onClose, initialData, refreshData }) => {
       }
       formData.append("link_video", form.link_video);
 
-      const res = await API.patch(
-        `/hotel/${initialData.id}`,
-        formData,
-        {
-          headers: { "Content-Type": "multipart/form-data" },
-        },
-      );
+      const res = await API.patch(`/hotel/${initialData.id}`, formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
       console.log("Response:", res.data);
       toast.success("Data berhasil ditambahkan!");
       refreshData?.();
@@ -302,7 +297,7 @@ const EditDataModal = ({ open, onClose, initialData, refreshData }) => {
                 ref={fileInputRef}
                 name="foto"
                 type="file"
-                accept="image/*,video/*"
+                accept=".jpg,.jpeg,.png,.gif,.webp,.mp4,.mov,.avi,.mkv"
                 onChange={handlePhoto}
                 disabled={!!form.link_video}
                 className="w-full"
