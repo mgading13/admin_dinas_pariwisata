@@ -12,8 +12,8 @@ import { useState, useCallback, useRef } from "react";
 import axios from "axios";
 import { toast } from "sonner";
 import { Trash } from "lucide-react";
-
 import debounce from "lodash.debounce";
+import API from "@/lib/api";
 
 const AddDataModal = ({ open, onClose, initialData, refreshData }) => {
   const [loading, setLoading] = useState(false);
@@ -95,9 +95,7 @@ const AddDataModal = ({ open, onClose, initialData, refreshData }) => {
     }
 
     try {
-      await axios.delete(
-        `http://localhost:3000/api/kuliner/foto/${initialData.id}`,
-      );
+      await API.delete(`/kuliner/foto/${initialData.id}`);
 
       setForm((prev) => ({
         ...prev,
@@ -142,8 +140,7 @@ const AddDataModal = ({ open, onClose, initialData, refreshData }) => {
       }
       formData.append("link_video", form.link_video);
 
-      const res = await axios.post(
-        "http://localhost:3000/api/kuliner/insert",
+      const res = await API.post("/kuliner/insert",
         formData,
         { headers: { "Content-Type": "multipart/form-data" } },
       );
@@ -226,13 +223,13 @@ const AddDataModal = ({ open, onClose, initialData, refreshData }) => {
                   {typeof form.foto === "string" ? (
                     form.foto.match(/\.(mp4|webm|ogg)$/i) ? (
                       <video
-                        src={`http://localhost:3000${form.foto}`}
+                        src={`${import.meta.env.VITE_BASE_URL}${form.foto}`}
                         controls
                         className="w-32 h-32 rounded-md border object-cover"
                       />
                     ) : (
                       <img
-                        src={`http://localhost:3000${form.foto}`}
+                        src={`${import.meta.env.VITE_BASE_URL}${form.foto}`}
                         alt="Preview"
                         className="w-32 h-32 object-cover rounded-md border"
                       />

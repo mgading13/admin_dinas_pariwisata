@@ -216,12 +216,12 @@ function Dashboard() {
                                 className="relative cursor-pointer w-24 aspect-video"
                                 onClick={() =>
                                   setSelectedVideo(
-                                    `http://localhost:3000${item.foto}`,
+                                    `${import.meta.env.VITE_BASE_URL}${item.foto}`,
                                   )
                                 }
                               >
                                 <video
-                                  src={`http://localhost:3000${item.foto}`}
+                                  src={`${import.meta.env.VITE_BASE_URL}${item.foto}`}
                                   className="w-full h-full object-cover rounded-lg border"
                                   preload="metadata"
                                 />
@@ -236,7 +236,7 @@ function Dashboard() {
                           return (
                             <div className="relative w-24 aspect-video">
                               <img
-                                src={`http://localhost:3000${item.foto}`}
+                                src={`${import.meta.env.VITE_BASE_URL}${item.foto}`}
                                 alt={item.nama_makanan}
                                 className="w-full h-full object-cover rounded-lg border"
                               />
@@ -399,13 +399,13 @@ function Dashboard() {
                   {selectedData.foto ? (
                     selectedData.foto.match(/\.(mp4|webm|ogg)$/i) ? (
                       <video
-                        src={`http://localhost:3000${selectedData.foto}`}
+                        src={`${import.meta.env.VITE_BASE_URL}${selectedData.foto}`}
                         controls
                         className="w-full aspect-video object-cover rounded-lg mt-2"
                       />
                     ) : (
                       <img
-                        src={`http://localhost:3000${selectedData.foto}`}
+                        src={`${import.meta.env.VITE_BASE_URL}${selectedData.foto}`}
                         alt={selectedData.nama_makanan}
                         className="w-full aspect-video object-cover rounded-lg mt-2"
                       />

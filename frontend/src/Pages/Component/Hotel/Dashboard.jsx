@@ -399,13 +399,13 @@ function Dashboard() {
                     {selectedData.foto ? (
                       selectedData.foto.match(/\.(mp4|webm|ogg)$/i) ? (
                         <video
-                          src={`http://localhost:3000${selectedData.foto}`}
+                          src={`${import.meta.env.VITE_BASE_URL}${selectedData.foto}`}
                           controls
                           className="w-full aspect-video object-cover rounded-lg mt-2"
                         />
                       ) : (
                         <img
-                          src={`http://localhost:3000${selectedData.foto}`}
+                          src={`${import.meta.env.VITE_BASE_URL}${selectedData.foto}`}
                           alt={selectedData.nama_hotel}
                           className="w-full aspect-video object-cover rounded-lg mt-2"
                         />

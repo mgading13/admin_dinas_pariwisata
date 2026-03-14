@@ -129,9 +129,7 @@ const EditDataModal = ({ open, onClose, initialData, refreshData }) => {
     }
 
     try {
-      await API.delete(
-        `/atraksi/foto/${initialData.id}`,
-      );
+      await API.delete(`/atraksi/foto/${initialData.id}`);
 
       setForm((prev) => ({
         ...prev,
@@ -185,13 +183,9 @@ const EditDataModal = ({ open, onClose, initialData, refreshData }) => {
       }
       formData.append("link_video", form.link_video);
 
-      const res = await API.patch(
-        `/atraksi/${initialData.id}`,
-        formData,
-        {
-          headers: { "Content-Type": "multipart/form-data" },
-        },
-      );
+      const res = await API.patch(`/atraksi/${initialData.id}`, formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
       // console.log('🟡 Mengirim data edit ke backend:', form)
       console.log("🟢 Respons backend:", res.data);
       toast.success("Data atraksi berhasil diperbarui!");
@@ -287,8 +281,7 @@ const EditDataModal = ({ open, onClose, initialData, refreshData }) => {
                 ref={fileInputRef}
                 name="foto"
                 type="file"
-                                accept=".jpg,.jpeg,.png,.gif,.webp,.mp4,.mov,.avi,.mkv"
-
+                accept=".jpg,.jpeg,.png,.gif,.webp,.mp4,.mov,.avi,.mkv"
                 onChange={handlePhoto}
                 disabled={!!form.link_video}
                 className="w-full"
@@ -300,13 +293,13 @@ const EditDataModal = ({ open, onClose, initialData, refreshData }) => {
                   {typeof form.foto === "string" ? (
                     form.foto.match(/\.(mp4|webm|ogg)$/i) ? (
                       <video
-                        src={`http://localhost:3000${form.foto}`}
+                        src={`${import.meta.env.VITE_BASE_URL}${form.foto}`}
                         controls
                         className="w-32 h-32 rounded-md border object-cover"
                       />
                     ) : (
                       <img
-                        src={`http://localhost:3000${form.foto}`}
+                        src={`${import.meta.env.VITE_BASE_URL}${form.foto}`}
                         alt="Preview"
                         className="w-32 h-32 object-cover rounded-md border"
                       />

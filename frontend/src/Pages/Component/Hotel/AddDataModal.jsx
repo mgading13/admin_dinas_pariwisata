@@ -297,13 +297,13 @@ const AddDataModal = ({ open, onClose, initialData, refreshData }) => {
                   {typeof form.foto === "string" ? (
                     form.foto.match(/\.(mp4|webm|ogg)$/i) ? (
                       <video
-                        src={`http://localhost:3000${form.foto}`}
+                        src={`${import.meta.env.VITE_BASE_URL}${form.foto}`}
                         controls
                         className="w-32 h-32 rounded-md border object-cover"
                       />
                     ) : (
                       <img
-                        src={`http://localhost:3000${form.foto}`}
+                        src={`${import.meta.env.VITE_BASE_URL}${form.foto}`}
                         alt="Preview"
                         className="w-32 h-32 object-cover rounded-md border"
                       />
