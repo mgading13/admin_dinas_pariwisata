@@ -361,13 +361,14 @@ const EditDataModal = ({ open, onClose, initialData, refreshData }) => {
                 {typeof form.media === "string" ? (
                   form.media.match(/\.(mp4|webm|ogg)$/i) ? (
                     <video
-                      src={`http://localhost:3000${form.media}`}
+                      src={`${import.meta.env.VITE_BASE_URL}${form.media}`}
+                      alt="Preview"
                       controls
                       className="w-32 h-32 rounded-md border object-cover"
                     />
                   ) : (
                     <img
-                      src={`http://localhost:3000${form.media}`}
+                      src={`${import.meta.env.VITE_BASE_URL}${form.media}`}
                       alt="Preview"
                       className="w-32 h-32 object-cover rounded-md border"
                     />

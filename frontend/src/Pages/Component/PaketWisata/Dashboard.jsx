@@ -226,12 +226,12 @@ function Dashboard() {
                                 className="relative cursor-pointer w-24 aspect-video"
                                 onClick={() =>
                                   setSelectedVideo(
-                                    `http://localhost:3000${item.media}`,
+                                    `${import.meta.env.VITE_BASE_URL}${item.media}`,
                                   )
                                 }
                               >
                                 <video
-                                  src={`http://localhost:3000${item.media}`}
+                                  src={`${import.meta.env.VITE_BASE_URL}${item.media}`}
                                   className="w-full h-full object-cover rounded-lg border"
                                   preload="metadata"
                                 />
@@ -246,7 +246,7 @@ function Dashboard() {
                           return (
                             <div className="relative w-24 aspect-video">
                               <img
-                                src={`http://localhost:3000${item.media}`}
+                                src={`${import.meta.env.VITE_BASE_URL}${item.media}`}
                                 alt={item.nama_wisata_id}
                                 className="w-full h-full object-cover rounded-lg border"
                               />
@@ -416,13 +416,13 @@ function Dashboard() {
                 {selectedData.media ? (
                   selectedData.media.match(/\.(mp4|webm|ogg)$/i) ? (
                     <video
-                      src={`http://localhost:3000${selectedData.media}`}
+                      src={`${import.meta.env.VITE_BASE_URL}${selectedData.media}`}
                       controls
                       className="w-full aspect-video object-cover rounded-lg mt-2"
                     />
                   ) : (
                     <img
-                      src={`http://localhost:3000${selectedData.media}`}
+                      src={`${import.meta.env.VITE_BASE_URL}${selectedData.media}`}
                       alt={selectedData.nama_wisata_id}
                       className="w-full aspect-video object-cover rounded-lg mt-2"
                     />
