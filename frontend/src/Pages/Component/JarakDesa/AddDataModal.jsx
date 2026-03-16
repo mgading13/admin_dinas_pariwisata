@@ -4,11 +4,13 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+
 import {
   Command,
   CommandEmpty,
@@ -19,6 +21,7 @@ import {
 
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
+
 import {
   Select,
   SelectContent,
@@ -26,6 +29,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+
 import { Textarea } from "@/components/ui/textarea";
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
@@ -34,7 +38,6 @@ import API from "@/lib/api";
 const AddDataModal = ({ open, onClose, initialData, refreshData }) => {
   const [desaList, setDesaList] = useState([]);
   const [existingRoutes, setExistingRoutes] = useState([]);
-
   const [form, setForm] = useState({
     titikKota: "",
     jalur_darat: "",
@@ -43,6 +46,7 @@ const AddDataModal = ({ open, onClose, initialData, refreshData }) => {
     desaId: "",
   });
 
+  // fetch desa
   useEffect(() => {
     async function fetchDesa() {
       try {
@@ -52,21 +56,37 @@ const AddDataModal = ({ open, onClose, initialData, refreshData }) => {
         console.error("Gagal ambil list desa wisata:", error);
       }
     }
+
     fetchDesa();
   }, []);
 
+  // fetch route berdasarkan desa
   useEffect(() => {
     if (!form.desaId) {
       setExistingRoutes([]);
       return;
     }
 
-    API
-      .get(`/jarak?desaId=${form.desaId}`)
-      .then((res) => setExistingRoutes(res.data))
-      .catch(() => setExistingRoutes([]));
+    let isCurrent = true;
+
+    API.get(`/jarak?desaId=${form.desaId}`)
+      .then((res) => {
+        if (isCurrent) {
+          setExistingRoutes(res.data);
+        }
+      })
+      .catch(() => {
+        if (isCurrent) {
+          setExistingRoutes([]);
+        }
+      });
+
+    return () => {
+      isCurrent = false;
+    };
   }, [form.desaId]);
 
+  // edit mode
   useEffect(() => {
     if (initialData) {
       setForm({
@@ -87,23 +107,45 @@ const AddDataModal = ({ open, onClose, initialData, refreshData }) => {
     }
   }, [initialData, open]);
 
-  const usedCities = existingRoutes.map((r) => r.titikKota);
-  const isFull = usedCities.includes("PALU") && usedCities.includes("LUWUK");
+  // kota yang sudah digunakan
+  const usedCities = existingRoutes
+    .filter((r) => Number(r.desaId) === Number(form.desaId))
+    .map((r) => r.titikKota?.toUpperCase());
+
+  // kota yang dipilih user
+  const selectedCity = form.titikKota?.toUpperCase();
+
+  // cek duplicate
+  const isDuplicateCity = usedCities.includes(selectedCity);
+
+  // cek apakah sudah lengkap
+  const isFull =
+    form.desaId && usedCities.includes("PALU") && usedCities.includes("LUWUK");
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setForm({ ...form, [name]: value });
+
+    setForm((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
     if (!form.desaId) {
       toast.warning("Pilih desa terlebih dahulu");
       return;
     }
 
+    if (isDuplicateCity) {
+      toast.warning("Titik kota sudah ada untuk desa ini");
+      return;
+    }
+
     if (isFull) {
-      toast.warning("Desa ini sudah memiliki rute Palu & Luwuk");
+      toast.warning("Desa ini sudah memiliki rute Palu dan Luwuk");
       return;
     }
 
@@ -116,14 +158,15 @@ const AddDataModal = ({ open, onClose, initialData, refreshData }) => {
         jalur_udara: form.jalur_udara,
       };
 
-      const res = await API.post("/jarak/insert", payload);
-      toast.success("Jalur desa berhasil ditambahkan!");
-      console.log("Add success:", res.data);
+      await API.post("/jarak/insert", payload);
+
+      toast.success("Jalur desa berhasil ditambahkan");
+
       refreshData?.();
       onClose();
     } catch (error) {
-      console.error("Error:", error);
-      toast.error("Gagal menambahkan jalur-jalur desa!");
+      console.error(error);
+      toast.error("Gagal menambahkan jalur desa");
     }
   };
 
@@ -137,6 +180,7 @@ const AddDataModal = ({ open, onClose, initialData, refreshData }) => {
         </DialogHeader>
 
         <div className="space-y-4 mt-4">
+          {/* PILIH DESA */}
           <div className="flex flex-col gap-2">
             <Label>Pilih Desa</Label>
 
@@ -169,6 +213,7 @@ const AddDataModal = ({ open, onClose, initialData, refreshData }) => {
                           setForm((prev) => ({
                             ...prev,
                             desaId: item.id,
+                            titikKota: "",
                           }))
                         }
                       >
@@ -184,81 +229,87 @@ const AddDataModal = ({ open, onClose, initialData, refreshData }) => {
           {/* TITIK KOTA */}
           <div className="flex flex-col gap-2">
             <Label>Titik Kota</Label>
+
             <Select
               value={form.titikKota}
-              onValueChange={(value) => setForm({ ...form, titikKota: value })}
-              disabled={isFull}
-              required
+              onValueChange={(value) =>
+                setForm((prev) => ({
+                  ...prev,
+                  titikKota: value,
+                }))
+              }
             >
-              <SelectTrigger
-                className="w-full
-                  h-10
-                  border
-                  border-input
-                  bg-background
-                  rounded-md
-                  px-3
-                  text-sm"
-              >
+              <SelectTrigger className="w-full">
                 <SelectValue placeholder="Pilih Titik Kota" />
               </SelectTrigger>
-              <SelectContent className="min-w-[var(--radix-select-trigger-width)]">
-                <SelectItem value="PALU" disabled={usedCities.includes("PALU")}>
-                  Palu {usedCities.includes("PALU") && "✓"}
-                </SelectItem>
-                <SelectItem
-                  value="LUWUK"
-                  disabled={usedCities.includes("LUWUK")}
-                >
-                  Luwuk {usedCities.includes("LUWUK") && "✓"}
-                </SelectItem>
+
+              <SelectContent>
+                <SelectItem value="PALU">Palu</SelectItem>
+                <SelectItem value="LUWUK">Luwuk</SelectItem>
               </SelectContent>
             </Select>
+
+            {/* WARNING DUPLICATE */}
+            {isDuplicateCity && (
+              <div className="rounded-md bg-amber-50 p-3 text-sm text-amber-700">
+                Titik kota {form.titikKota} sudah pernah ditambahkan untuk desa
+                ini
+              </div>
+            )}
+
+            {/* WARNING FULL */}
+            {isFull && (
+              <div className="rounded-md bg-red-50 p-3 text-sm text-red-600">
+                Desa ini sudah memiliki rute dari Palu dan Luwuk
+              </div>
+            )}
           </div>
 
-          {isFull && (
-            <div className="rounded-md bg-red-50 p-3 text-sm text-red-600">
-              Desa ini sudah memiliki rute dari Palu dan Luwuk
-            </div>
-          )}
+          {/* JALUR DARAT */}
           <div className="flex flex-col gap-2">
             <Label>Jalur Darat</Label>
+
             <Textarea
               name="jalur_darat"
               value={form.jalur_darat}
               onChange={handleChange}
               placeholder="Masukkan jalur menuju desa"
               required
-              className="w-full resize-none break-all whitespace-pre-wrap overflow-x-hidden"
             />
           </div>
+
+          {/* JALUR LAUT */}
           <div className="flex flex-col gap-2">
             <Label>Jalur Laut</Label>
+
             <Textarea
               name="jalur_laut"
               value={form.jalur_laut}
               onChange={handleChange}
               placeholder="Masukkan jalur menuju desa"
               required
-              className="w-full resize-none break-all whitespace-pre-wrap overflow-x-hidden"
             />
           </div>
+
+          {/* JALUR UDARA */}
           <div className="flex flex-col gap-2">
             <Label>Jalur Udara</Label>
+
             <Textarea
               name="jalur_udara"
               value={form.jalur_udara}
               onChange={handleChange}
               placeholder="Masukkan jalur menuju desa"
               required
-              className="w-full resize-none break-all whitespace-pre-wrap overflow-x-hidden"
             />
           </div>
 
+          {/* BUTTON */}
           <div className="flex justify-end gap-2 mt-4">
             <Button type="button" variant="outline" onClick={onClose}>
               Batal
             </Button>
+
             <Button onClick={handleSubmit}>
               {initialData ? "Simpan Perubahan" : "Tambah Data"}
             </Button>

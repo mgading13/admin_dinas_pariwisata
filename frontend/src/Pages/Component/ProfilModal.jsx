@@ -15,6 +15,8 @@ import {
   SelectItem,
   SelectValue,
 } from "@/components/ui/select";
+import { Label } from "@/components/ui/label";
+
 import { toast } from "sonner";
 import { Eye, EyeOff } from "lucide-react";
 import API from "@/lib/api";
@@ -31,8 +33,7 @@ export default function ProfilModal({ open, onOpenChange, adminId }) {
   useEffect(() => {
     if (!open || !adminId) return;
 
-    API
-      .get(`/user/${adminId}`)
+    API.get(`/user/${adminId}`)
       .then((res) => {
         setForm({
           nama_Lengkap: res.data.nama_Lengkap || "",
@@ -50,27 +51,34 @@ export default function ProfilModal({ open, onOpenChange, adminId }) {
 
   const handleSave = async () => {
     try {
+      const isChangePassword = form.password.trim() !== "";
+
       const payload = {
         nama_Lengkap: form.nama_Lengkap,
         jenis_kelamin: form.jenis_kelamin,
         username: form.username,
       };
 
-      if (form.password.trim() !== "") {
+      if (isChangePassword) {
         payload.password = form.password;
       }
 
       await API.patch(`/user/${adminId}`, payload);
 
-      toast.success("Data berhasil diperbarui");
+      // ✅ Jika password diubah
+      if (isChangePassword) {
+        toast.success("Password berhasil diubah. Silakan login kembali.");
 
-      if (form.password.trim() !== "") {
-        localStorage.removeItem("token"); 
-        sessionStorage.clear();
-        window.location.href = "/"; 
+        setTimeout(() => {
+          localStorage.removeItem("token");
+          sessionStorage.clear();
+          window.location.href = "/";
+        }, 1500);
+
         return;
       }
 
+      toast.success("Data berhasil diperbarui");
       onOpenChange(false);
     } catch (error) {
       toast.error(error.response?.data?.error || "Gagal update data");
@@ -85,51 +93,73 @@ export default function ProfilModal({ open, onOpenChange, adminId }) {
         </DialogHeader>
 
         <div className="space-y-4 mt-4">
-          <Input
-            name="nama_Lengkap"
-            value={form.nama_Lengkap}
-            onChange={handleChange}
-            placeholder="Nama Lengkap"
-          />
-
-          <Select
-            value={form.jenis_kelamin}
-            onValueChange={(val) => setForm({ ...form, jenis_kelamin: val })}
-          >
-            <SelectTrigger className="w-full h-10 border border-input bg-background rounded-md px-3 text-sm">
-              <SelectValue placeholder="Jenis Kelamin" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="laki-laki">Laki-Laki</SelectItem>
-              <SelectItem value="perempuan">Perempuan</SelectItem>
-            </SelectContent>
-          </Select>
-
-          <Input
-            name="username"
-            value={form.username}
-            onChange={handleChange}
-            placeholder="Username"
-          />
-
-          <div className="relative">
+          {/* Nama Lengkap */}
+          <div className="flex flex-col gap-2">
+            <Label>Nama Lengkap</Label>
             <Input
-              name="password"
-              placeholder="Password"
-              type={showPassword ? "text" : "password"}
-              value={form.password || ""}
+              name="nama_Lengkap"
+              value={form.nama_Lengkap}
               onChange={handleChange}
+              placeholder="Masukkan nama lengkap"
               required
-              className="pr-10"
             />
+          </div>
 
-            <button
-              type="button"
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
-              onClick={() => setShowPassword(!showPassword)}
+          {/* Jenis Kelamin */}
+          <div className="flex flex-col gap-2">
+            <Label>Jenis Kelamin</Label>
+
+            <Select
+              value={form.jenis_kelamin || ""}
+              onValueChange={(value) =>
+                handleChange({ target: { name: "jenis_kelamin", value } })
+              }
             >
-              {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-            </button>
+              <SelectTrigger className="w-full">
+                <SelectValue placeholder="Pilih Jenis Kelamin" />
+              </SelectTrigger>
+
+              <SelectContent>
+                <SelectItem value="Laki-laki">Laki-laki</SelectItem>
+                <SelectItem value="Perempuan">Perempuan</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* Username */}
+          <div className="flex flex-col gap-2">
+            <Label>Username</Label>
+            <Input
+              name="username"
+              value={form.username}
+              onChange={handleChange}
+              placeholder="Masukkan username"
+              required
+            />
+          </div>
+
+          {/* Password */}
+          <div className="flex flex-col gap-2">
+            <Label>Password</Label>
+
+            <div className="relative">
+              <Input
+                name="password"
+                type={showPassword ? "text" : "password"}
+                value={form.password}
+                onChange={handleChange}
+                placeholder="Kosongkan jika tidak ingin mengganti"
+                className="pr-10"
+              />
+
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-800"
+              >
+                {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+              </button>
+            </div>
           </div>
         </div>
 

@@ -96,6 +96,8 @@ function Dashboard() {
     return mergedData.filter((item) => {
       const matchSearch = item.titikKota
         ?.toLowerCase()
+        .includes(search.toLowerCase()) || item.desa.namaDesa_id
+        ?.toLowerCase()
         .includes(search.toLowerCase());
 
       const matchFilter =
