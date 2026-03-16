@@ -208,8 +208,10 @@ function Dashboard() {
                     <TableCell>{item.nama_hotel}</TableCell>
                     <TableCell>{item.lokasi}</TableCell>
                     <TableCell>{item.telepon}</TableCell>
-                    <TableCell>
-                      Rp. {Number(item.harga).toLocaleString("id-ID")}
+                    <TableCell className="whitespace-nowrap">
+                      Rp {Number(item.harga_minimum).toLocaleString("id-ID")}
+                      <span className="mx-1 text-gray-400">—</span>
+                      Rp {Number(item.harga_maximum).toLocaleString("id-ID")}
                     </TableCell>
                     <TableCell>{item.jumlah_kamar}</TableCell>
                     <TableCell>{item.jumlah_tempatTidur}</TableCell>
@@ -351,8 +353,9 @@ function Dashboard() {
                     <div>
                       <Label className="font-bold">Harga per Malam :</Label>
                       <p>
-                        Start from Rp{" "}
-                        {Number(selectedData.harga).toLocaleString("id-ID")}
+                        Rp {Number(selectedData.harga_minimum).toLocaleString("id-ID")}
+                      <span className="mx-1 text-gray-400">—</span>
+                      Rp {Number(selectedData.harga_maximum).toLocaleString("id-ID")}
                       </p>
                     </div>
                   </div>

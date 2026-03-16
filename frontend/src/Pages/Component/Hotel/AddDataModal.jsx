@@ -21,7 +21,10 @@ const AddDataModal = ({ open, onClose, initialData, refreshData }) => {
     lokasi: "",
     jumlah_kamar: "",
     jumlah_tempatTidur: "",
-    harga: "",
+    harga_minimum: "",
+    harga_maximum: "",
+    harga_minimumDisplay: "",
+    harga_maximumDisplay: "",
     website: "",
     link_gmaps: "",
     telepon: "",
@@ -36,7 +39,10 @@ const AddDataModal = ({ open, onClose, initialData, refreshData }) => {
         lokasi: initialData.lokasi || "",
         jumlah_kamar: initialData.jumlah_kamar || "",
         jumlah_tempatTidur: initialData.jumlah_tempatTidur || "",
-        harga: initialData.harga || "",
+        harga_minimum: initialData.harga_minimum || "",
+        harga_maximum: initialData.harga_maximum || "",
+        harga_minimumDisplay: formatCurrency(initialData.harga_minimum),
+        harga_maximumDisplay: formatCurrency(initialData.harga_maximum),
         website: initialData.website || "",
         link_gmaps: initialData.link_gmaps || "",
         telepon: initialData.telepon || "",
@@ -49,7 +55,10 @@ const AddDataModal = ({ open, onClose, initialData, refreshData }) => {
         lokasi: "",
         jumlah_kamar: "",
         jumlah_tempatTidur: "",
-        harga: "",
+        harga_minimum: "",
+        harga_maximum: "",
+        harga_minimumDisplay: "",
+        harga_maximumDisplay: "",
         website: "",
         link_gmaps: "",
         telepon: "",
@@ -65,13 +74,23 @@ const AddDataModal = ({ open, onClose, initialData, refreshData }) => {
   };
   const handleChange = (e) => {
     const { name, value } = e.target;
-    if (name === "harga") {
+    if (name === "harga_minimum") {
       const raw = value.replace(/\D/g, "");
-      setForm({
-        ...form,
-        harga: raw,
-        hargaDisplay: formatCurrency(raw),
-      });
+      setForm((prev) => ({
+        ...prev,
+        harga_minimum: raw,
+        harga_minimumDisplay: formatCurrency(raw),
+      }));
+      return;
+    }
+
+    if (name === "harga_maximum") {
+      const raw = value.replace(/\D/g, "");
+      setForm((prev) => ({
+        ...prev,
+        harga_maximum: raw,
+        harga_maximumDisplay: formatCurrency(raw),
+      }));
       return;
     }
     if (name === "link_video") {
@@ -142,6 +161,12 @@ const AddDataModal = ({ open, onClose, initialData, refreshData }) => {
       toast.warning("Harap isi salah satu antara Foto/Video atau Link Video ");
       return;
     }
+    if (Number(form.harga_minimum) > Number(form.harga_maximum)) {
+      toast.warning(
+        "Harga minimum tidak boleh lebih besar dari harga maksimum",
+      );
+      return;
+    }
     setLoading(true);
 
     try {
@@ -151,7 +176,8 @@ const AddDataModal = ({ open, onClose, initialData, refreshData }) => {
       formData.append("lokasi", form.lokasi);
       formData.append("jumlah_kamar", form.jumlah_kamar);
       formData.append("jumlah_tempatTidur", form.jumlah_tempatTidur);
-      formData.append("harga", form.harga);
+      formData.append("harga_minimum", form.harga_minimum);
+      formData.append("harga_maximum", form.harga_maximum);
       formData.append("website", form.website);
       formData.append("link_gmaps", form.link_gmaps);
       formData.append("telepon", form.telepon);
@@ -234,14 +260,24 @@ const AddDataModal = ({ open, onClose, initialData, refreshData }) => {
             </div>
 
             <div className="flex flex-col gap-2">
-              <Label>Harga per Malam</Label>
+              <Label>Harga Minimum</Label>
               <Input
-                name="harga"
-                value={form.hargaDisplay ?? ""}
+                name="harga_minimum"
+                value={form.harga_minimumDisplay ?? ""}
                 onChange={handleChange}
-                placeholder="Masukkan harga per malam"
+                placeholder="Masukkan harga minimum"
                 required
-                className="w-full"
+              />
+            </div>
+
+            <div className="flex flex-col gap-2">
+              <Label>Harga Maximum</Label>
+              <Input
+                name="harga_maximum"
+                value={form.harga_maximumDisplay ?? ""}
+                onChange={handleChange}
+                placeholder="Masukkan harga maximum"
+                required
               />
             </div>
 

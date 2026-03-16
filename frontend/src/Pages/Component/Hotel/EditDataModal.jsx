@@ -16,12 +16,16 @@ import API from "@/lib/api";
 const EditDataModal = ({ open, onClose, initialData, refreshData }) => {
   const fileInputRef = useRef(null);
   const [loading, setLoading] = useState(false);
+
   const [form, setForm] = useState({
     nama_hotel: "",
     lokasi: "",
     jumlah_kamar: "",
     jumlah_tempatTidur: "",
-    harga: "",
+    harga_minimum: "",
+    harga_maximum: "",
+    harga_minimumDisplay: "",
+    harga_maximumDisplay: "",
     website: "",
     link_gmaps: "",
     telepon: "",
@@ -29,131 +33,111 @@ const EditDataModal = ({ open, onClose, initialData, refreshData }) => {
     link_video: "",
   });
 
+  const formatCurrency = (value) => {
+    if (!value) return "";
+    return "Rp " + value.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+  };
+
   useEffect(() => {
     if (initialData) {
-      const rawHarga = initialData.harga?.toString() || "";
-      const formattedHarga = formatToRupiah(rawHarga);
-
       setForm({
         nama_hotel: initialData.nama_hotel || "",
         lokasi: initialData.lokasi || "",
         jumlah_kamar: initialData.jumlah_kamar || "",
         jumlah_tempatTidur: initialData.jumlah_tempatTidur || "",
-        harga: rawHarga,
-        hargaDisplay: formattedHarga,
+        harga_minimum: initialData.harga_minimum || "",
+        harga_maximum: initialData.harga_maximum || "",
+        harga_minimumDisplay: formatCurrency(initialData.harga_minimum),
+        harga_maximumDisplay: formatCurrency(initialData.harga_maximum),
         website: initialData.website || "",
         link_gmaps: initialData.link_gmaps || "",
         telepon: initialData.telepon || "",
         foto: initialData.foto || "",
         link_video: initialData.link_video || "",
       });
-    } else {
-      setForm({
-        nama_hotel: "",
-        lokasi: "",
-        jumlah_kamar: "",
-        jumlah_tempatTidur: "",
-        harga: "",
-        hargaDisplay: "",
-        website: "",
-        link_gmaps: "",
-        telepon: "",
-        foto: "",
-        link_video: "",
-      });
     }
   }, [initialData, open]);
 
-  const formatToRupiah = (num) => {
-    if (!num) return "";
-    return "Rp " + num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
-  };
-
-  const extractNumber = (str) => {
-    if (!str) return "";
-    return str.replace(/\D/g, "");
-  };
   const handleChange = (e) => {
     const { name, value } = e.target;
 
-    if (name === "harga") {
-      const raw = extractNumber(value);
-      setForm({
-        ...form,
-        harga: raw,
-        hargaDisplay: formatToRupiah(raw),
-      });
-      return;
-    }
-    if (name === "link_video") {
-      setForm({
-        ...form,
-        link_video: value,
-        foto: "",
-      });
+    if (name === "harga_minimum") {
+      const raw = value.replace(/\D/g, "");
+      setForm((prev) => ({
+        ...prev,
+        harga_minimum: raw,
+        harga_minimumDisplay: formatCurrency(raw),
+      }));
       return;
     }
 
-    setForm({ ...form, [name]: value });
+    if (name === "harga_maximum") {
+      const raw = value.replace(/\D/g, "");
+      setForm((prev) => ({
+        ...prev,
+        harga_maximum: raw,
+        harga_maximumDisplay: formatCurrency(raw),
+      }));
+      return;
+    }
+
+    if (name === "link_video") {
+      setForm((prev) => ({
+        ...prev,
+        link_video: value,
+        foto: "",
+      }));
+      return;
+    }
+
+    setForm((prev) => ({ ...prev, [name]: value }));
   };
 
   const handlePhoto = (e) => {
     const file = e.target.files[0];
     if (file) {
-      setForm({
-        ...form,
+      setForm((prev) => ({
+        ...prev,
         foto: file,
         link_video: "",
-      });
+      }));
     }
   };
 
   const handleRemoveFile = async () => {
     if (form.foto && typeof form.foto === "object") {
-      setForm((prev) => ({
-        ...prev,
-        foto: "",
-      }));
-
-      if (fileInputRef.current) {
-        fileInputRef.current.value = "";
-      }
-
+      setForm((prev) => ({ ...prev, foto: "" }));
+      if (fileInputRef.current) fileInputRef.current.value = "";
       return;
     }
 
     try {
       await API.delete(`/hotel/foto/${initialData.id}`);
-
-      setForm((prev) => ({
-        ...prev,
-        foto: "",
-      }));
-
-      if (fileInputRef.current) {
-        fileInputRef.current.value = "";
-      }
-
+      setForm((prev) => ({ ...prev, foto: "" }));
+      if (fileInputRef.current) fileInputRef.current.value = "";
       toast.success("File berhasil dihapus");
-    } catch (error) {
-      console.error("❌ Gagal menghapus file:", error);
+    } catch {
       toast.error("Gagal menghapus file");
     }
   };
 
   const handleRemoveLink = () => {
-    setForm({
-      ...form,
-      link_video: "",
-    });
+    setForm((prev) => ({ ...prev, link_video: "" }));
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
     if (!form.foto && !form.link_video) {
-      toast.warning("Harap isi salah satu antara Foto/Video atau Link Video ");
+      toast.warning("Harap isi salah satu Foto/Video atau Link Video");
       return;
     }
+
+    if (Number(form.harga_minimum) > Number(form.harga_maximum)) {
+      toast.warning("Harga minimum tidak boleh lebih besar dari maksimum");
+      return;
+    }
+
     setLoading(true);
 
     try {
@@ -163,25 +147,30 @@ const EditDataModal = ({ open, onClose, initialData, refreshData }) => {
       formData.append("lokasi", form.lokasi);
       formData.append("jumlah_kamar", form.jumlah_kamar);
       formData.append("jumlah_tempatTidur", form.jumlah_tempatTidur);
-      formData.append("harga", form.harga);
+      formData.append("harga_minimum", form.harga_minimum);
+      formData.append("harga_maximum", form.harga_maximum);
       formData.append("website", form.website);
       formData.append("link_gmaps", form.link_gmaps);
       formData.append("telepon", form.telepon);
+
       if (form.foto && typeof form.foto === "object") {
         formData.append("foto", form.foto);
       }
+
       formData.append("link_video", form.link_video);
 
-      const res = await API.patch(`/hotel/${initialData.id}`, formData, {
+      await API.patch(`/hotel/${initialData.id}`, formData, {
         headers: { "Content-Type": "multipart/form-data" },
       });
-      console.log("Response:", res.data);
-      toast.success("Data berhasil ditambahkan!");
+
+      toast.success("Data hotel berhasil diperbarui");
       refreshData?.();
       onClose();
     } catch (error) {
-      console.error("Error:", error.response?.data);
-      toast.error("Gagal menyimpan data!");
+      console.error(error);
+      toast.error("Gagal memperbarui data");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -246,14 +235,23 @@ const EditDataModal = ({ open, onClose, initialData, refreshData }) => {
             </div>
 
             <div className="flex flex-col gap-2">
-              <Label>Harga per Malam</Label>
+              <Label>Harga Minimum</Label>
               <Input
-                name="harga"
-                value={form.hargaDisplay}
+                name="harga_minimum"
+                value={form.harga_minimumDisplay}
                 onChange={handleChange}
-                placeholder="Masukkan harga per malam"
                 required
-                className="w-full"
+              />
+            </div>
+
+            {/* harga maximum */}
+            <div className="flex flex-col gap-2">
+              <Label>Harga Maximum</Label>
+              <Input
+                name="harga_maximum"
+                value={form.harga_maximumDisplay}
+                onChange={handleChange}
+                required
               />
             </div>
 
