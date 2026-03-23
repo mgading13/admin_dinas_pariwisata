@@ -48,8 +48,7 @@ export default function Sidebar({ children }) {
   useEffect(() => {
     if (!userId) return;
 
-    API
-      .get(`/user/${userId}`)
+    API.get(`/user/${userId}`)
       .then((res) => {
         const admin = res.data.data || res.data;
 
@@ -323,6 +322,26 @@ export default function Sidebar({ children }) {
 
               <ScrollArea className="flex-1 px-4 py-6">
                 <nav className="space-y-3">
+                  {role === "superAdmin" && (
+                    <Link
+                      to="/super-admin"
+                      className={`flex items-center gap-3 px-3 py-2 rounded-lg font-medium transition
+      ${
+        isActive("/super-admin")
+          ? "bg-orange-100 text-orange-600 font-semibold"
+          : "text-gray-700 hover:bg-gray-100"
+      }`}
+                    >
+                      <UserStar
+                        className={`h-5 w-5 ${
+                          isActive("/super-admin")
+                            ? "text-orange-600"
+                            : "text-orange-500"
+                        }`}
+                      />
+                      Super Admin
+                    </Link>
+                  )}
                   <Link
                     to="/admin/grafik-pengunjung"
                     className={`flex items-center gap-3 px-3 py-2 rounded-lg font-medium transition
